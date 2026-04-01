@@ -1,0 +1,66 @@
+BasedOnStyle: LLVM
+
+#general
+ColumnLimit: 150
+Language: Cpp
+IndentWidth: 4
+MaxEmptyLinesToKeep: 1
+TabWidth: 4
+UseTab: Never
+Standard: c++17
+
+#indents
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+NamespaceIndentation: All
+
+#parameters
+BinPackArguments: false
+BinPackParameters: false
+
+#alignment
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+AllowShortBlocksOnASingleLine: Never
+PackConstructorInitializers: Never
+SpaceInEmptyBlock: false
+
+# breaks
+BreakConstructorInitializers: AfterColon
+EmptyLineAfterAccessModifier: Never
+
+#namespaces
+FixNamespaceComments: true
+
+# * and & position
+PointerAlignment: Left
+ReferenceAlignment: Left
+QualifierAlignment: Left
+
+#templates
+AlwaysBreakTemplateDeclarations: Yes
+IndentRequiresClause: true
+SpaceAfterTemplateKeyword: false
+
+#case
+IndentCaseLabels: true
+
+#spaces
+Cpp11BracedListStyle: false
+SpaceBeforeCpp11BracedList: false
+
+#headers
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^((<|")())'
+    CaseSensitive: true
+    Priority: 2
+  - Regex: "<[[:alnum:]._]+>"
+    CaseSensitive: true
+    Priority: 1
+  - Regex: ".*"
+    CaseSensitive: true
+    Priority: 3
+    SortPriority: 0
