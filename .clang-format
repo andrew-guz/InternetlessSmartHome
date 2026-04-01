@@ -54,9 +54,6 @@ SpaceBeforeCpp11BracedList: false
 #headers
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^((<|")())'
-    CaseSensitive: true
-    Priority: 2
   - Regex: "<[[:alnum:]._]+>"
     CaseSensitive: true
     Priority: 1

@@ -1,12 +1,10 @@
 #include <Arduino.h>
-// #include <ArduinoOTA.h>
+#include <ArduinoOTA.h>
 
+#include "Defines.h"
 #include "Display.h"
 #include "Temperature.h"
 #include "WiFi.h"
-
-#define SSID     String("Thermometer")
-#define PASSWORD String("1234567890")
 
 OLEDDisplay display;
 I2CTemperatureSensor temperature;
@@ -15,9 +13,14 @@ WiFiDataServer<float> server;
 void setup() {
     display.Setup();
     temperature.Setup();
-    server.Setup(SSID, PASSWORD);
+    server.Setup(DEVICE_WIFI_SSID, DEVICE_WIFI_PASSWORD);
 
-    display.ShowString(server.GetAddress().toString());
+    ArduinoOTA.setHostname(DEVICE_OTA_NAME);
+    ArduinoOTA.setPasswordHash(DEVICE_OTA_PASSWORD);
+    ArduinoOTA.begin();
 }
 
-void loop() { server.Loop(); }
+void loop() {
+    server.Loop();
+    ArduinoOTA.handle();
+}
