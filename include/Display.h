@@ -45,11 +45,19 @@ public:
     void SetBrightness(int value) {
         if (value < 0)
             value = 0;
-        if (value > 1)
-            value = 1;
+        if (value > 2)
+            value = 2;
         _brightness = value;
-        if (_brightness == 0) {
-            _display.clearDisplay();
+        switch (_brightness) {
+            case 0:
+                _display.clearDisplay();
+                break;
+            case 1:
+                _display.dim(true);
+                break;
+            case 2:
+                _display.dim(false);
+                break;
         }
     }
 
@@ -70,5 +78,5 @@ public:
 
 private:
     Adafruit_SSD1306 _display;
-    int _brightness = 1;
+    int _brightness = 2;
 };
