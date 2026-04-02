@@ -13,7 +13,6 @@ public:
 
         _ipAddress = WiFi.softAPIP();
 
-        _server.on("/", HTTPMethod::HTTP_GET, std::bind(&WiFiDataServer<T>::HandleRoot, this));
         _server.on("/get", HTTPMethod::HTTP_GET, std::bind(&WiFiDataServer<T>::HandleGet, this));
 
         _server.begin();
@@ -26,8 +25,6 @@ public:
     void Loop() { _server.handleClient(); }
 
 private:
-    void HandleRoot() { _server.send(200, "text/plain", _ipAddress.toString()); }
-
     void HandleGet() { _server.send(200, "text/plain", String(_data)); }
 
 private:

@@ -2,10 +2,11 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Fonts/FreeSans12pt7b.h>
-#include <Fonts/FreeSans18pt7b.h>
 #include <SPI.h>
 #include <Wire.h>
+
+#include <Fonts/FreeSans12pt7b.h>
+#include <Fonts/FreeSans18pt7b.h>
 
 #define DISPLAY_MAX_BRIGHTNESS 1
 #define SCREEN_WIDTH           128
@@ -23,6 +24,22 @@ public:
         _display.setTextSize(1);
         _display.setTextColor(SSD1306_WHITE);
         _display.cp437(true);
+    }
+
+    enum class Font {
+        Font_12pt7b,
+        Font_18pt7b,
+    };
+
+    void SetFont(Font font) {
+        switch (font) {
+            case Font::Font_12pt7b:
+                _display.setFont(&FreeSans12pt7b);
+                break;
+            case Font::Font_18pt7b:
+                _display.setFont(&FreeSans18pt7b);
+                break;
+        }
     }
 
     void SetBrightness(int value) {

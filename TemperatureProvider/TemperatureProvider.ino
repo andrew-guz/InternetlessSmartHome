@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#include <WString.h>
 
 #include "Defines.h"
 #include "Display.h"
@@ -23,4 +24,9 @@ void setup() {
 void loop() {
     server.Loop();
     ArduinoOTA.handle();
+
+    const float temp = temperature.GetTemperature();
+    server.SetData(temp);
+    display.SetFont(OLEDDisplay::OLEDDisplay::Font::Font_18pt7b);
+    display.ShowString(String(temp, 1) + String(" C"));
 }
