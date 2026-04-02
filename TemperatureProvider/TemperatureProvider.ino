@@ -17,11 +17,19 @@ void setup() {
     display.Setup();
     temperature.Setup();
     server.Setup(DEVICE_WIFI_SSID, DEVICE_WIFI_PASSWORD);
-    server.Register("/get", HTTPMethod::HTTP_GET, [&]() {
+    server.Register("/", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
             .contentType = "text/plain",
             .content = String(temp),
+        };
+    });
+    server.Register("/", HTTPMethod::HTTP_POST, [&](const String& body) {
+        display.SetBrightness(body.toInt());
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = "OK",
         };
     });
 

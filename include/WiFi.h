@@ -31,6 +31,13 @@ public:
         });
     }
 
+    void Register(const String& path, HTTPMethod method, std::function<WiFiDataServer::Response(const String&)> handler) {
+        _server.on(path, method, [this, handler]() {
+            WiFiDataServer::Response response = handler(_server.arg("plain"));
+            _server.send(response.code, response.contentType, response.content);
+        });
+    }
+
     void Loop() { _server.handleClient(); }
 
 private:
