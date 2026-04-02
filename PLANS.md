@@ -1,0 +1,2 @@
+HTTPS support
+Authorization support
