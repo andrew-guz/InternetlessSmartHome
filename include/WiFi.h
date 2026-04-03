@@ -31,7 +31,6 @@ public:
     void Register(const String& path, HTTPMethod method, std::function<WiFiDataServer::Response(void)> handler) {
         _server.on(path, method, [this, handler]() {
             if (!_server.authenticateDigest(WWW_USER_NAME, _hash)) {
-                // Запрашиваем Digest-авторизацию
                 _server.requestAuthentication(DIGEST_AUTH, WWW_REALM, "Authentication failed");
                 return;
             }
