@@ -5,20 +5,30 @@
 #include "Defines.h"
 #include "DeviceDefines.h"
 #include "Display.h"
+#include "Memory.h"
 #include "Temperature.h"
 #include "WiFi.h"
 
 OLEDDisplay display;
 I2CTemperatureSensor temperature;
 WiFiDataServer server;
+Memory<int> memory;
 
 unsigned long lastUpdate = 0;
 float temp = 0.0f;
+int brightness = 2;
 
 void setup() {
     display.Setup();
     temperature.Setup();
     server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
+    memory.Setup();
+
+    brightness = memory.Load();
+    if (brightness < 0 || brightness > 2)
+        brightness = 2;
+    display.SetBrightness(brightness);
+
     server.Register("/temperature", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
@@ -26,8 +36,19 @@ void setup() {
             .content = String(temp),
         };
     });
+    server.Register("/brightness", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = String(brightness),
+        };
+    });
     server.Register("/brightness", HTTPMethod::HTTP_POST, [&](const String& body) {
-        display.SetBrightness(body.toInt());
+        brightness = body.toInt();
+        memory.Save(brightness);
+
+        display.SetBrightness(brightness);
+
         return WiFiDataServer::Response{
             .code = 200,
             .contentType = "text/plain",

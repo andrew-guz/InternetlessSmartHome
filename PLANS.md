@@ -1,2 +1,3 @@
-HTTPS support
-Authorization support
+- 
+
+? HTTPS support - too slow. not working.
