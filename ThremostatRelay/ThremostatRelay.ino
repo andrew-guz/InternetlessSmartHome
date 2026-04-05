@@ -45,6 +45,33 @@ void setup() {
             .content = "OK",
         };
     });
+    server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = on ? "true" : "false",
+        };
+    });
+    server.Register("/state", HTTPMethod::HTTP_POST, [&](const String& body) {
+        if (manualMode == false) {
+            return WiFiDataServer::Response{
+                .code = 300,
+                .contentType = "text/plain",
+                .content = "Not in manual mode",
+            };
+        }
+
+        on = body == "true";
+        memory.Save("on", manualMode);
+
+        digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = "OK",
+        };
+    });
     server.Register("/temperatureName", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
