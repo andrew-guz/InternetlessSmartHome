@@ -8,7 +8,7 @@
 #include "Memory.h"
 #include "WiFi.h"
 
-WiFiDualServer server;
+WiFiDataServer server;
 Memory memory;
 
 unsigned long lastUpdate = 0;
@@ -35,8 +35,8 @@ void setup() {
     temperatureDelta = memory.Load("temperatureDelta", 0.5f);
 
     if (manualMode) {
-        digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
         state = manualState;
+        digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
     }
 
     server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
@@ -44,6 +44,30 @@ void setup() {
             .code = 200,
             .contentType = "text/plain",
             .content = state ? "true" : "false",
+        };
+    });
+    server.Register("/temperature", HTTPMethod::HTTP_POST, [&](const String& body) {
+        if (manualMode) {
+            return WiFiDataServer::Response{
+                .code = 300,
+                .contentType = "text/plain",
+                .content = "In manual mode",
+            };
+        }
+
+        const float temperature = body.toFloat();
+        if (temperature < targetTemperature - temperatureDelta) {
+            state = true;
+            digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
+        } else if (temperature > targetTemperature + temperatureDelta) {
+            state = false;
+            digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? LOW : HIGH);
+        }
+
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = "OK",
         };
     });
     server.Register("/manualMode", HTTPMethod::HTTP_GET, [&]() {
@@ -87,8 +111,8 @@ void setup() {
             manualState = newValue;
             memory.Save("manualState", manualState);
 
-            digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
             state = manualState;
+            digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
         }
 
         return WiFiDataServer::Response{
@@ -165,21 +189,6 @@ void setup() {
 void loop() {
     server.Loop();
     ArduinoOTA.handle();
-
-    if (millis() - lastUpdate > 30000) {
-        lastUpdate = millis();
-
-        if (manualMode == false && thermometerName.length() != 0) {
-            // std::optional<float> temperature = server.GetData<float>(thermometerName, "/temperature");
-            // if (temperature.has_value()) {
-            //     if (temperature.value() < targetTemperature - temperatureDelta) {
-            //         digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
-            //     } else if (temperature.value() > targetTemperature + temperatureDelta) {
-            //         digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? LOW : HIGH);
-            //     }
-            // }
-        }
-    }
 
     delay(1);
 }
