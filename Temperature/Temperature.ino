@@ -12,7 +12,7 @@
 OLEDDisplay display;
 I2CTemperatureSensor temperature;
 WiFiDataServer server;
-Memory<int> memory;
+Memory memory;
 
 unsigned long lastUpdate = 0;
 float temp = 0.0f;
@@ -24,9 +24,7 @@ void setup() {
     server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
     memory.Setup();
 
-    brightness = memory.Load();
-    if (brightness < 0 || brightness > 2)
-        brightness = 2;
+    brightness = memory.Load("brightness", 2);
     display.SetBrightness(brightness);
 
     server.Register("/temperature", HTTPMethod::HTTP_GET, [&]() {
@@ -45,7 +43,7 @@ void setup() {
     });
     server.Register("/brightness", HTTPMethod::HTTP_POST, [&](const String& body) {
         brightness = body.toInt();
-        memory.Save(brightness);
+        memory.Save("brightness", brightness);
 
         display.SetBrightness(brightness);
 
