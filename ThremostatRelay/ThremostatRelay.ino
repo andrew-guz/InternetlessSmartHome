@@ -14,7 +14,7 @@ Memory memory;
 unsigned long lastUpdate = 0;
 bool manualMode = false;
 bool manualOn = false;
-String temperatureName = "";
+String thermometerName = "";
 float targetTemperature = 20.0f;
 float temperatureDelta = 0.5f;
 
@@ -29,7 +29,7 @@ void setup() {
         manualOn = memory.Load("manualOn", false);
     }
 
-    temperatureName = memory.Load("temperatureName", String{});
+    thermometerName = memory.Load("thermometerName", String{});
     targetTemperature = memory.Load("targetTemperature", 20.0f);
     temperatureDelta = memory.Load("temperatureDelta", 0.5f);
 
@@ -87,17 +87,17 @@ void setup() {
             .content = "OK",
         };
     });
-    server.Register("/temperatureName", HTTPMethod::HTTP_GET, [&]() {
+    server.Register("/thermometerName", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
             .contentType = "text/plain",
-            .content = temperatureName,
+            .content = thermometerName,
         };
     });
-    server.Register("/temperatureName", HTTPMethod::HTTP_POST, [&](const String& body) {
-        if (body != temperatureName) {
-            temperatureName = body;
-            memory.Save("temperatureName", temperatureName);
+    server.Register("/thermometerName", HTTPMethod::HTTP_POST, [&](const String& body) {
+        if (body != thermometerName) {
+            thermometerName = body;
+            memory.Save("thermometerName", thermometerName);
         }
 
         return WiFiDataServer::Response{
@@ -159,8 +159,8 @@ void loop() {
     if (millis() - lastUpdate > 30000) {
         lastUpdate = millis();
 
-        if (manualMode == false && temperatureName.length() != 0) {
-            std::optional<float> temperature = server.GetData<float>(temperatureName, "/temperature");
+        if (manualMode == false && thermometerName.length() != 0) {
+            std::optional<float> temperature = server.GetData<float>(thermometerName, "/temperature");
             if (temperature.has_value()) {
                 if (temperature.value() < targetTemperature - temperatureDelta) {
                     digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
