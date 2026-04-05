@@ -17,6 +17,10 @@ public:
 
     virtual void Setup(const String& ssid, const String& password) {
         WiFi.mode(WIFI_AP);
+
+        IPAddress localIP(192, 168, NETWORK, 1);
+
+        WiFi.softAPConfig(localIP, localIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(ssid);
 
         _ipAddress = WiFi.softAPIP();
