@@ -17,6 +17,7 @@ bool manualState = false;
 String thermometerName = "";
 float targetTemperature = 20.0f;
 float temperatureDelta = 0.5f;
+bool state = false;
 
 void setup() {
     pinMode(RELAY_PIN, OUTPUT);
@@ -35,8 +36,16 @@ void setup() {
 
     if (manualMode) {
         digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+        state = manualState;
     }
 
+    server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = state ? "true" : "false",
+        };
+    });
     server.Register("/manualMode", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
@@ -79,6 +88,7 @@ void setup() {
             memory.Save("manualState", manualState);
 
             digitalWrite(RELAY_PIN, manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+            state = manualState;
         }
 
         return WiFiDataServer::Response{
