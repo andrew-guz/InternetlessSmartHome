@@ -94,18 +94,42 @@ public:
             return std::nullopt;
 
         IPAddress targetApIp = WiFi.gatewayIP();
+        String fullUrl = String("http://") + targetApIp.toString() + url;
 
-        String body;
         HTTPClient http;
         http.setTimeout(3000);
         WiFiClient client;
-        String fullUrl = String("http://") + targetApIp.toString() + url;
-        if (http.begin(client, fullUrl)) {
-            if (http.GET() == HTTP_CODE_OK) {
-                body = http.getString();
-            }
+        String body;
 
-            http.end();
+        if (http.begin(client, fullUrl)) {
+            const char* headers[] = { "WWW-Authenticate" };
+            http.collectHeaders(headers, 1);
+            int httpCode = http.GET();
+            if (httpCode == 401) {
+                String authReq = http.header("WWW-Authenticate");
+                http.end();
+
+                if (authReq.length() > 0) {
+                    const String auth = BuildDigestAuth(authReq, url);
+
+                    if (http.begin(client, fullUrl)) {
+                        http.addHeader("Authorization", auth);
+                        httpCode = http.GET();
+
+                        if (httpCode == HTTP_CODE_OK) {
+                            body = http.getString();
+                        }
+
+                        http.end();
+                    }
+                }
+            } else if (httpCode == HTTP_CODE_OK) {
+                body = http.getString();
+
+                http.end();
+            } else {
+                http.end();
+            }
         }
 
         WiFi.disconnect();
@@ -123,5 +147,44 @@ public:
             return body == "true" ? true : false;
 
         return std::nullopt;
+    }
+
+private:
+    String ExtractDigestParam(const String& authRequest, const String& param) {
+        int beginIdx = authRequest.indexOf(param + "=\"");
+        if (beginIdx == -1)
+            return "";
+        beginIdx += param.length() + 2;
+        int endIdx = authRequest.indexOf("\"", beginIdx);
+        return authRequest.substring(beginIdx, endIdx);
+    }
+
+    String MD5String(String input) {
+        MD5Builder md5;
+        md5.begin();
+        md5.add(input);
+        md5.calculate();
+        return md5.toString();
+    }
+
+    String BuildDigestAuth(const String& authRequest, const String& uri) {
+        String realm = ExtractDigestParam(authRequest, "realm");
+        String nonce = ExtractDigestParam(authRequest, "nonce");
+        String qop = ExtractDigestParam(authRequest, "qop");
+
+        String cnonce = "00000001";
+        String nc = "00000001";
+
+        // Используем предвычисленный _hash как HA1
+        // _hash уже содержит MD5(username:realm:password)
+
+        // HA2 = MD5(GET:uri)
+        String ha2 = MD5String("GET:" + uri);
+
+        // response = MD5(HA1:nonce:nc:cnonce:qop:HA2)
+        String response = MD5String(_hash + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + ha2);
+
+        return "Digest username=\"" + String{ WWW_USER_NAME } + "\", realm=\"" + realm + "\", " + "nonce=\"" + nonce + "\", uri=\"" + uri +
+               "\", qop=" + qop + ", " + "nc=" + nc + ", cnonce=\"" + cnonce + "\", response=\"" + response + "\"";
     }
 };

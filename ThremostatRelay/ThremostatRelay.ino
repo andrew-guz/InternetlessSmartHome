@@ -160,14 +160,14 @@ void loop() {
         lastUpdate = millis();
 
         if (manualMode == false && thermometerName.length() != 0) {
-            std::optional<float> temperature = server.GetData<float>(thermometerName, "/temperature");
-            if (temperature.has_value()) {
-                if (temperature.value() < targetTemperature - temperatureDelta) {
-                    digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
-                } else if (temperature.value() > targetTemperature + temperatureDelta) {
-                    digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? LOW : HIGH);
-                }
-            }
+            // std::optional<float> temperature = server.GetData<float>(thermometerName, "/temperature");
+            // if (temperature.has_value()) {
+            //     if (temperature.value() < targetTemperature - temperatureDelta) {
+            //         digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
+            //     } else if (temperature.value() > targetTemperature + temperatureDelta) {
+            //         digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? LOW : HIGH);
+            //     }
+            // }
         }
     }
 
