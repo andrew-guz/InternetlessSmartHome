@@ -25,6 +25,7 @@ void setup() {
     memory.Setup();
 
     brightness = memory.Load("brightness", 2);
+    
     display.SetBrightness(brightness);
 
     server.Register("/temperature", HTTPMethod::HTTP_GET, [&]() {

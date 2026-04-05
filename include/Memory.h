@@ -46,3 +46,13 @@ template<>
 inline String Memory::Load<String>(const char* name, String defaultValue) {
     return _preferences.getString(name, defaultValue);
 }
+
+template<>
+inline void Memory::Save<bool>(const char* name, const bool& data) {
+    _preferences.putBool(name, data);
+}
+
+template<>
+inline bool Memory::Load<bool>(const char* name, bool defaultValue) {
+    return _preferences.getBool(name, defaultValue);
+}
