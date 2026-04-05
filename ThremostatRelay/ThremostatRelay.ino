@@ -21,7 +21,7 @@ float temperatureDelta = 0.5f;
 void setup() {
     pinMode(RELAY_PIN, OUTPUT);
 
-    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
+    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD, NETWORK);
     memory.Setup();
 
     manualMode = memory.Load("manualMode", false);

@@ -15,7 +15,7 @@ bool on = false;
 void setup() {
     pinMode(RELAY_PIN, OUTPUT);
 
-    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
+    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD, NETWORK);
     memory.Setup();
 
     on = memory.Load("on", false);

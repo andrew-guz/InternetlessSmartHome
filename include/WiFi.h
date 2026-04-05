@@ -6,6 +6,7 @@
 #include <ESP8266WiFiType.h>
 #include <IPAddress.h>
 #include <WString.h>
+#include <cstdint>
 #include <functional>
 #include <optional>
 
@@ -15,12 +16,12 @@ class WiFiDataServer {
 public:
     WiFiDataServer() { _hash = _server.credentialHash(WWW_USER_NAME, WWW_REALM, WWW_PASSWORD); }
 
-    virtual void Setup(const String& ssid, const String& password) {
+    virtual void Setup(const String& ssid, const String& password, const std::uint8_t network) {
         WiFi.mode(WIFI_AP);
 
-        IPAddress localIP(192, 168, NETWORK, 1);
-
+        IPAddress localIP(192, 168, network, 1);
         WiFi.softAPConfig(localIP, localIP, IPAddress(255, 255, 255, 0));
+
         WiFi.softAP(ssid);
 
         _ipAddress = WiFi.softAPIP();
@@ -65,8 +66,12 @@ protected:
 
 class WiFiDualServer : public WiFiDataServer {
 public:
-    virtual void Setup(const String& ssid, const String& password) override {
+    virtual void Setup(const String& ssid, const String& password, const std::uint8_t network) override {
         WiFi.mode(WIFI_AP_STA);
+
+        IPAddress localIP(192, 168, network, 1);
+        WiFi.softAPConfig(localIP, localIP, IPAddress(255, 255, 255, 0));
+
         WiFi.softAP(ssid, password);
 
         _ipAddress = WiFi.softAPIP();
