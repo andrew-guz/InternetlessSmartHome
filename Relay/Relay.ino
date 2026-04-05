@@ -6,7 +6,6 @@
 #include "DeviceDefines.h"
 #include "Memory.h"
 #include "WiFi.h"
-#include "pins_arduino.h"
 
 WiFiDataServer server;
 Memory memory;
