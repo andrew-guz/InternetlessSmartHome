@@ -29,10 +29,13 @@ void setup() {
         };
     });
     server.Register("/state", HTTPMethod::HTTP_POST, [&](const String& body) {
-        on = body == "true";
-        memory.Save("on", on);
+        const bool newValue = body == "true";
+        if (newValue != on) {
+            on = newValue;
+            memory.Save("on", on); // for future - need normal memory 1 write/hour = ~11 years
 
-        digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+            digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+        }
 
         return WiFiDataServer::Response{
             .code = 200,

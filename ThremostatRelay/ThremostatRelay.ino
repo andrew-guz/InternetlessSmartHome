@@ -1,19 +1,22 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <WString.h>
+#include <optional>
 
 #include "Defines.h"
 #include "DeviceDefines.h"
 #include "Memory.h"
 #include "WiFi.h"
 
-WiFiDataServer server;
+WiFiDualServer server;
 Memory memory;
 
+unsigned long lastUpdate = 0;
 bool manualMode = false;
+bool manualOn = false;
 String temperatureName = "";
 float targetTemperature = 20.0f;
-bool on = false;
+float temperatureDelta = 0.5f;
 
 void setup() {
     pinMode(RELAY_PIN, OUTPUT);
@@ -22,11 +25,17 @@ void setup() {
     memory.Setup();
 
     manualMode = memory.Load("manualMode", false);
+    if (manualMode) {
+        manualOn = memory.Load("manualOn", false);
+    }
+
     temperatureName = memory.Load("temperatureName", String{});
     targetTemperature = memory.Load("targetTemperature", 20.0f);
-    on = memory.Load("on", false);
+    temperatureDelta = memory.Load("temperatureDelta", 0.5f);
 
-    digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+    if (manualMode) {
+        digitalWrite(RELAY_PIN, manualOn ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+    }
 
     server.Register("/manualMode", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
@@ -36,8 +45,11 @@ void setup() {
         };
     });
     server.Register("/manualMode", HTTPMethod::HTTP_POST, [&](const String& body) {
-        manualMode = body == "true";
-        memory.Save("manualMode", manualMode);
+        const bool newValue = body == "true";
+        if (newValue != manualMode) {
+            manualMode = newValue;
+            memory.Save("manualMode", manualMode);
+        }
 
         return WiFiDataServer::Response{
             .code = 200,
@@ -45,14 +57,14 @@ void setup() {
             .content = "OK",
         };
     });
-    server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
+    server.Register("/manualOn", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
             .contentType = "text/plain",
-            .content = on ? "true" : "false",
+            .content = manualOn ? "true" : "false",
         };
     });
-    server.Register("/state", HTTPMethod::HTTP_POST, [&](const String& body) {
+    server.Register("/manualOn", HTTPMethod::HTTP_POST, [&](const String& body) {
         if (manualMode == false) {
             return WiFiDataServer::Response{
                 .code = 300,
@@ -61,10 +73,13 @@ void setup() {
             };
         }
 
-        on = body == "true";
-        memory.Save("on", manualMode);
+        const bool newValue = body == "true";
+        if (newValue != manualOn) {
+            manualOn = newValue;
+            memory.Save("manualOn", manualOn);
 
-        digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+            digitalWrite(RELAY_PIN, manualOn ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+        }
 
         return WiFiDataServer::Response{
             .code = 200,
@@ -80,8 +95,10 @@ void setup() {
         };
     });
     server.Register("/temperatureName", HTTPMethod::HTTP_POST, [&](const String& body) {
-        temperatureName = body;
-        memory.Save("temperatureName", temperatureName);
+        if (body != temperatureName) {
+            temperatureName = body;
+            memory.Save("temperatureName", temperatureName);
+        }
 
         return WiFiDataServer::Response{
             .code = 200,
@@ -97,8 +114,31 @@ void setup() {
         };
     });
     server.Register("/targetTemperature", HTTPMethod::HTTP_POST, [&](const String& body) {
-        targetTemperature = body.toFloat();
-        memory.Save("targetTemperature", targetTemperature);
+        const float newValue = body.toFloat();
+        if (newValue != targetTemperature) {
+            targetTemperature = body.toFloat();
+            memory.Save("targetTemperature", targetTemperature);
+        }
+
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = "OK",
+        };
+    });
+    server.Register("/temperatureDelta", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = String(temperatureDelta),
+        };
+    });
+    server.Register("/temperatureDelta", HTTPMethod::HTTP_POST, [&](const String& body) {
+        const float newValue = body.toFloat();
+        if (newValue != temperatureDelta) {
+            temperatureDelta = body.toFloat();
+            memory.Save("temperatureDelta", temperatureDelta);
+        }
 
         return WiFiDataServer::Response{
             .code = 200,
@@ -115,6 +155,21 @@ void setup() {
 void loop() {
     server.Loop();
     ArduinoOTA.handle();
+
+    if (millis() - lastUpdate > 30000) {
+        lastUpdate = millis();
+
+        if (manualMode == false && temperatureName.length() != 0) {
+            std::optional<float> temperature = server.GetData<float>(temperatureName, "/temperature");
+            if (temperature.has_value()) {
+                if (temperature.value() < targetTemperature - temperatureDelta) {
+                    digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? HIGH : LOW);
+                } else if (temperature.value() > targetTemperature + temperatureDelta) {
+                    digitalWrite(RELAY_PIN, ON_BY_HIGH_LEVEL ? LOW : HIGH);
+                }
+            }
+        }
+    }
 
     delay(1);
 }

@@ -25,7 +25,7 @@ void setup() {
     memory.Setup();
 
     brightness = memory.Load("brightness", 2);
-    
+
     display.SetBrightness(brightness);
 
     server.Register("/temperature", HTTPMethod::HTTP_GET, [&]() {
@@ -43,10 +43,13 @@ void setup() {
         };
     });
     server.Register("/brightness", HTTPMethod::HTTP_POST, [&](const String& body) {
-        brightness = body.toInt();
-        memory.Save("brightness", brightness);
+        const int newValue = body.toInt();
+        if (newValue != brightness) {
+            brightness = newValue;
+            memory.Save("brightness", brightness);
 
-        display.SetBrightness(brightness);
+            display.SetBrightness(brightness);
+        }
 
         return WiFiDataServer::Response{
             .code = 200,
