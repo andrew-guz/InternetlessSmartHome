@@ -21,7 +21,7 @@ int brightness = 2;
 void setup() {
     display.Setup();
     temperature.Setup();
-    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD, NETWORK);
+    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
     memory.Setup();
 
     brightness = memory.Load("brightness", 2);
