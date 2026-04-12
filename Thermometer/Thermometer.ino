@@ -28,6 +28,13 @@ void setup() {
 
     display.SetBrightness(brightness);
 
+    server.Register("/type", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = DEVICE_TYPE,
+        };
+    });
     server.Register("/temperature", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,

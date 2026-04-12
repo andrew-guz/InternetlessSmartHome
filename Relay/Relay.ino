@@ -21,6 +21,13 @@ void setup() {
     on = memory.Load("on", false);
     digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
 
+    server.Register("/type", HTTPMethod::HTTP_GET, [&]() {
+        return WiFiDataServer::Response{
+            .code = 200,
+            .contentType = "text/plain",
+            .content = DEVICE_TYPE,
+        };
+    });
     server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
         return WiFiDataServer::Response{
             .code = 200,
