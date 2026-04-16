@@ -67,7 +67,6 @@ void PollThermometers() {
 
         Serial.println("Connected to " + thermometer);
 
-        HTTPClient http;
         http.setTimeout(2000);
         http.begin("http://192.168.4.1/temperature");
         int httpCode = http.GET();
