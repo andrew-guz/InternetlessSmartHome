@@ -43,15 +43,20 @@ void ScanDevices() {
 
     WiFi.scanDelete();
 
+    vTaskDelay(pdMS_TO_TICKS(100));
+
     for (const String& ssid : ssids) {
         Serial.println("Connecting to " + ssid);
 
         WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
 
         vTaskDelay(pdMS_TO_TICKS(100));
 
-        // WiFi.begin(ssid.c_str(), WIFI_PASSWORD);
-        WiFi.begin(ssid.c_str());
+        WiFi.mode(WIFI_STA);
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        WiFi.begin(ssid.c_str(), WIFI_PASSWORD);
 
         int attempts = 0;
         while (WiFi.status() != WL_CONNECTED && attempts < 20) {
@@ -86,6 +91,11 @@ void ScanDevices() {
             Serial.println("Failed to get type");
         }
         http.end();
+
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 
     Serial.println("Scaning devices end");

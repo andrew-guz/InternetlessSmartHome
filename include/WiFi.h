@@ -8,11 +8,13 @@
 #include <WString.h>
 #include <functional>
 
+#include "Defines.h"
+
 class WiFiDataServer {
 public:
     virtual void Setup(const String& ssid, const String& password) {
         WiFi.mode(WIFI_AP);
-        WiFi.softAP(ssid);
+        WiFi.softAP(ssid, WIFI_PASSWORD);
         _server.begin();
     }
 
