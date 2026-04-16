@@ -17,6 +17,8 @@ void setup() {
     xTaskCreate(MonitorTask, "Monitor task", 2048, NULL, 1, &monitorTaskHandle);
     xTaskCreate(WiFiTask, "WiFi task", 2048, NULL, 1, &wifiTaskHandle);
 
+    vTaskDelay(pdMS_TO_TICKS(500));
+
     ScanDevices();
 }
 

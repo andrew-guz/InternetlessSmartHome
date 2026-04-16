@@ -10,21 +10,52 @@ SemaphoreHandle_t mutex = NULL;
 
 std::set<String> thermometers;
 std::set<String> relays;
-std::set<String> thermostats;
+std::set<String> thermostatRelays;
 
 std::map<String, float> thermometerValues;
 std::map<String, bool> relayState;
+std::map<String, bool> thermostatRelayState;
 
 void ClearData() {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
     thermometers.clear();
     relays.clear();
-    thermostats.clear();
+    thermostatRelays.clear();
     thermometerValues.clear();
     relayState.clear();
 
     xSemaphoreGive(mutex);
+}
+
+std::set<String> ListThermometers() {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    std::set<String> result = thermometers;
+
+    xSemaphoreGive(mutex);
+
+    return result;
+}
+
+std::set<String> ListRelays() {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    std::set<String> result = relays;
+
+    xSemaphoreGive(mutex);
+
+    return result;
+}
+
+std::set<String> ListThermostatRelays() {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    std::set<String> result = thermostatRelays;
+
+    xSemaphoreGive(mutex);
+
+    return result;
 }
 
 void AddThermometer(const String& ssid) {
@@ -45,10 +76,10 @@ void AddRelay(const String& ssid) {
     xSemaphoreGive(mutex);
 }
 
-void AddThermostat(const String& ssid) {
+void AddThermostatRelay(const String& ssid) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    thermostats.insert(ssid);
+    thermostatRelays.insert(ssid);
 
     xSemaphoreGive(mutex);
 }
@@ -69,6 +100,14 @@ void SetRelayState(const String& ssid, bool state) {
     xSemaphoreGive(mutex);
 }
 
+void SetThermostatRelayState(const String& ssid, bool state) {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    thermostatRelayState[ssid] = state;
+
+    xSemaphoreGive(mutex);
+}
+
 float GetThermometerValue(const String& ssid) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
@@ -83,6 +122,16 @@ bool GetRelayState(const String& ssid) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
     const bool state = relayState[ssid];
+
+    xSemaphoreGive(mutex);
+
+    return state;
+}
+
+bool GetThermostatRelayState(const String& ssid) {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    const bool state = thermostatRelayState[ssid];
 
     xSemaphoreGive(mutex);
 

@@ -9,12 +9,16 @@
 #include "../include/Defines.h"
 
 namespace {
+#define WIFI_DELAY 200
 
     void Disconnect() {
         WiFi.disconnect(true);
+
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
+
         WiFi.mode(WIFI_OFF);
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
     }
 
 } // namespace
@@ -27,11 +31,11 @@ void ScanDevices() {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect(true);
 
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
 
     const int16_t networksFoundCount = WiFi.scanNetworks();
 
-    vTaskDelay(pdMS_TO_TICKS(1));
+    vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
 
     Serial.println("Found " + String(networksFoundCount) + " networks");
 
@@ -53,7 +57,7 @@ void ScanDevices() {
 
     WiFi.scanDelete();
 
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
 
     for (const String& ssid : ssids) {
         Serial.println("Connecting to " + ssid);
@@ -61,13 +65,13 @@ void ScanDevices() {
         Disconnect();
 
         WiFi.mode(WIFI_STA);
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
 
         WiFi.begin(ssid.c_str(), WIFI_PASSWORD);
 
         int attempts = 0;
-        while (WiFi.status() != WL_CONNECTED && attempts < 20) {
-            vTaskDelay(pdMS_TO_TICKS(100));
+        while (WiFi.status() != WL_CONNECTED && attempts < 5000 / WIFI_DELAY) {
+            vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
             attempts++;
         }
 
@@ -91,8 +95,8 @@ void ScanDevices() {
                 Serial.println("Thermometer found");
                 AddThermometer(ssid);
             } else if (type == DEVICE_TYPE_THERMOSTAT_RELAY) {
-                Serial.println("Thermostat found");
-                AddThermostat(ssid);
+                Serial.println("Thermostat relay found");
+                AddThermostatRelay(ssid);
             }
         } else {
             Serial.println("Failed to get type");
@@ -102,7 +106,7 @@ void ScanDevices() {
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
     }
 
     Serial.println("Scaning devices end");
