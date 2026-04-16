@@ -14,12 +14,10 @@ void setup() {
 
     MonitorTaskInit();
 
-    xTaskCreate(MonitorTask, "Monitor task", 2048, NULL, 1, &monitorTaskHandle);
-    xTaskCreate(WiFiTask, "WiFi task", 2048, NULL, 1, &wifiTaskHandle);
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
-    vTaskDelay(pdMS_TO_TICKS(500));
-
-    ScanDevices();
+    xTaskCreate(MonitorTask, "Monitor task", 16384, NULL, 1, &monitorTaskHandle);
+    xTaskCreate(WiFiTask, "WiFi task", 16384, NULL, 1, &wifiTaskHandle);
 }
 
 void loop() { vTaskDelete(NULL); }

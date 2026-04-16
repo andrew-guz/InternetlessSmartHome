@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
+#include <set>
 #include <vector>
 
 #include "../include/Data.h"
@@ -10,6 +11,10 @@
 
 namespace {
 #define WIFI_DELAY 200
+
+    bool devicesScanned = false;
+
+    HTTPClient http;
 
     void Disconnect() {
         WiFi.disconnect(true);
@@ -22,6 +27,66 @@ namespace {
     }
 
 } // namespace
+
+void PollThermometers() {
+    if (!devicesScanned)
+        return;
+
+    std::set<String> thermometers = ListThermometers();
+    if (thermometers.empty()) {
+        return;
+    }
+
+    Serial.println("Polling thermometers...");
+
+    WiFi.mode(WIFI_STA);
+    WiFi.disconnect(true);
+
+    vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
+
+    for (const String& thermometer : thermometers) {
+        Serial.println("Connecting to " + thermometer);
+
+        Disconnect();
+
+        WiFi.mode(WIFI_STA);
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
+
+        WiFi.begin(thermometer.c_str(), WIFI_PASSWORD);
+
+        int attempts = 0;
+        while (WiFi.status() != WL_CONNECTED && attempts < 5000 / WIFI_DELAY) {
+            vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
+            attempts++;
+        }
+
+        if (WiFi.status() != WL_CONNECTED) {
+            Serial.println("Failed to connect to " + thermometer);
+            continue;
+        }
+
+        Serial.println("Connected to " + thermometer);
+
+        HTTPClient http;
+        http.setTimeout(2000);
+        http.begin("http://192.168.4.1/temperature");
+        int httpCode = http.GET();
+        if (httpCode == 200) {
+            String temperature = http.getString();
+            SetThermometerValue(thermometer, temperature.toFloat());
+        } else {
+            Serial.println("Failed to get temperature");
+        }
+        http.end();
+
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+
+        vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
+    }
+
+    Serial.println("Polling thermometers end");
+}
 
 void ScanDevices() {
     Serial.println("Scaning devices...");
@@ -82,7 +147,6 @@ void ScanDevices() {
 
         Serial.println("Connected to " + ssid);
 
-        HTTPClient http;
         http.setTimeout(2000);
         http.begin("http://192.168.4.1/type");
         int httpCode = http.GET();
@@ -109,11 +173,21 @@ void ScanDevices() {
         vTaskDelay(pdMS_TO_TICKS(WIFI_DELAY));
     }
 
+    devicesScanned = true;
+
     Serial.println("Scaning devices end");
 }
 
 void WiFiTask(void* pvParameters) {
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+    ScanDevices();
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
     while (true) {
-        vTaskDelay(pdMS_TO_TICKS(1));
+        PollThermometers();
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
