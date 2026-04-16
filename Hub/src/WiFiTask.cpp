@@ -7,7 +7,17 @@
 
 #include "../include/Data.h"
 #include "../include/Defines.h"
-#include "HardwareSerial.h"
+
+namespace {
+
+    void Disconnect() {
+        WiFi.disconnect(true);
+        WiFi.mode(WIFI_OFF);
+
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+} // namespace
 
 void ScanDevices() {
     Serial.println("Scaning devices...");
@@ -48,10 +58,7 @@ void ScanDevices() {
     for (const String& ssid : ssids) {
         Serial.println("Connecting to " + ssid);
 
-        WiFi.disconnect(true);
-        WiFi.mode(WIFI_OFF);
-
-        vTaskDelay(pdMS_TO_TICKS(100));
+        Disconnect();
 
         WiFi.mode(WIFI_STA);
         vTaskDelay(pdMS_TO_TICKS(100));
