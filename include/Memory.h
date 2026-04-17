@@ -2,6 +2,7 @@
 
 #include <Preferences.h>
 #include <WString.h>
+#include <array>
 
 class Memory {
 public:
@@ -55,4 +56,17 @@ inline void Memory::Save<bool>(const char* name, const bool& data) {
 template<>
 inline bool Memory::Load<bool>(const char* name, bool defaultValue) {
     return _preferences.getBool(name, defaultValue);
+}
+
+template<>
+inline void Memory::Save<std::array<std::uint8_t, 6>>(const char* name, const std::array<std::uint8_t, 6>& data) {
+    _preferences.putBytes(name, data.data(), 6);
+}
+
+template<>
+inline std::array<std::uint8_t, 6> Memory::Load<std::array<std::uint8_t, 6>>(const char* name, std::array<std::uint8_t, 6> defaultValue) {
+    std::array<std::uint8_t, 6> data;
+    if (_preferences.getBytes(name, data.data(), 6) != 6)
+        return defaultValue;
+    return data;
 }
