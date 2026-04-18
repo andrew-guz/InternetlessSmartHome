@@ -5,6 +5,7 @@
 
 #include "Memory.hpp"
 #include "Messages.hpp"
+#include "include/Messages.hpp"
 
 Memory memory;
 
@@ -26,9 +27,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
     if (message->type == MessageType::TEMPERATURE && memcmp(message->sender.data(), relayState.thermometer.data(), sizeof(Mac)) == 0 &&
         message->dataSize == sizeof(float)) //
     {
-        float temperature;
-        memcpy(&temperature, message->data, sizeof(temperature));
-
+        float temperature = getMessageData<float>(message);
         if (relayState.manualMode == false) {
             if (temperature < relayState.targetTemperature - relayState.temperatureDelta && relayState.temperatureState != true) {
                 relayState.temperatureState = true;
@@ -42,8 +41,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
         }
     } else if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0) {
         if (message->type == MessageType::THERMOSTAT_RELAY_MANUAL_MODE && message->dataSize == sizeof(bool)) {
-            bool manualMode;
-            memcpy(&manualMode, message->data, sizeof(manualMode));
+            bool manualMode = getMessageData<bool>(message);
             if (manualMode != relayState.manualMode) {
                 relayState.manualMode = manualMode;
                 digitalWrite(RELAY_PIN, relayState.manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
@@ -51,30 +49,26 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
             }
         } else if (message->type == MessageType::THERMOSTAT_RELAY_MANUAL_STATE && message->dataSize == sizeof(bool) &&
                    relayState.manualMode == true) {
-            bool manualState;
-            memcpy(&manualState, message->data, sizeof(manualState));
+            bool manualState = getMessageData<bool>(message);
             if (relayState.manualMode == true && manualState != relayState.manualState) {
                 relayState.manualState = manualState;
                 digitalWrite(RELAY_PIN, relayState.manualState ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
                 memory.Save("manualState", relayState.manualState);
             }
         } else if (message->type == MessageType::THERMOSTAT_RELAY_THERMOMETER && message->dataSize == sizeof(Mac)) {
-            Mac thermometer;
-            memcpy(thermometer.data(), message->data, sizeof(Mac));
+            Mac thermometer = getMessageData<Mac>(message);
             if (memcmp(thermometer.data(), relayState.thermometer.data(), sizeof(Mac)) != 0) {
                 memcpy(relayState.thermometer.data(), thermometer.data(), sizeof(Mac));
                 memory.Save("thermometer", relayState.thermometer);
             }
         } else if (message->type == MessageType::THERMOSTAT_RELAY_TEMPERATURE && message->dataSize == sizeof(float)) {
-            float targetTemperature;
-            memcpy(&targetTemperature, message->data, sizeof(relayState.targetTemperature));
+            float targetTemperature = getMessageData<float>(message);
             if (targetTemperature != relayState.targetTemperature) {
                 relayState.targetTemperature = targetTemperature;
                 memory.Save("targetTemperature", relayState.targetTemperature);
             }
         } else if (message->type == MessageType::THERMOSTAT_RELAY_TEMPERATURE_DELTA && message->dataSize == sizeof(float)) {
-            float temperatureDelta;
-            memcpy(&temperatureDelta, message->data, sizeof(relayState.targetTemperature));
+            float temperatureDelta = getMessageData<float>(message);
             if (temperatureDelta != relayState.temperatureDelta) {
                 relayState.temperatureDelta = temperatureDelta;
                 memory.Save("temperatureDelta", relayState.temperatureDelta);
@@ -124,8 +118,8 @@ void loop() {
             .type = MessageType::THERMOSTAT_RELAY_STATE,
         };
         memcpy(message.sender.data(), mac.data(), 6);
-        memcpy(message.data, &relayState, sizeof(RelayState));
         memcpy(message.receiver.data(), broadcast, 6);
+        setMessageData(message, relayState);
         message.dataSize = sizeof(RelayState);
 
         esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));

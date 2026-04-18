@@ -5,6 +5,7 @@
 
 #include "Memory.hpp"
 #include "Messages.hpp"
+#include "include/Messages.hpp"
 
 Memory memory;
 
@@ -25,8 +26,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
     Message* message = (Message*)incomingData;
     if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0 && message->type == MessageType::RELAY_SET_STATE &&
         message->dataSize == sizeof(bool)) {
-        bool newState;
-        memcpy(&newState, message->data, sizeof(newState));
+        bool newState = getMessageData<bool>(message);
         if (newState != state) {
             state = newState;
             digitalWrite(RELAY_PIN, state ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
@@ -67,7 +67,7 @@ void loop() {
         };
         memcpy(message.sender.data(), mac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
-        memcpy(message.data, &state, sizeof(bool));
+        setMessageData(message, state);
         message.dataSize = sizeof(bool);
 
         esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));

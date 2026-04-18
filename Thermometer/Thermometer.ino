@@ -6,6 +6,7 @@
 #include "Memory.hpp"
 #include "Messages.hpp"
 #include "Temperature.hpp"
+#include "include/Messages.hpp"
 
 OLEDDisplay display;
 I2CTemperatureSensor thermometer;
@@ -24,9 +25,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
 
     Message* message = (Message*)incomingData;
     if (message->type == MessageType::THERMOMETER_BRIGHTNESS && message->dataSize == sizeof(int)) {
-        int newValue;
-        memcpy(&newValue, message->data, sizeof(int));
-
+        int newValue = getMessageData<int>(message);
         if (newValue != brightness) {
             brightness = newValue;
             memory.Save("brightness", brightness);
@@ -71,7 +70,7 @@ void loop() {
         };
         memcpy(message.sender.data(), mac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
-        memcpy(message.data, &temperature, sizeof(temperature));
+        setMessageData(message, temperature);
         message.dataSize = sizeof(temperature);
 
         esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));

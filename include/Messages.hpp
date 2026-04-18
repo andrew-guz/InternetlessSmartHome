@@ -33,15 +33,35 @@ enum class MessageType : std::uint8_t {
     THERMOSTAT_RELAY_TEMPERATURE_DELTA, // send to thermostat relay to specify temperature delta
 };
 
-#define DATA_SIZE 128
+typedef std::array<std::uint8_t, 128> MessageData;
 
 struct Message {
     Mac sender;
     Mac receiver;
     MessageType type;
-    char data[DATA_SIZE];
+    MessageData data;
     std::uint8_t dataSize;
 };
+
+template<typename T>
+inline void setMessageData(Message& message, const T& value) {
+    memcpy(message.data.data(), &value, sizeof(T));
+    message.dataSize = sizeof(T);
+}
+
+template<typename T>
+inline T getMessageData(const Message& message) {
+    T value;
+    memcpy(&value, message.data.data(), sizeof(T));
+    return value;
+}
+
+template<typename T>
+inline T getMessageData(const Message* message) {
+    T value;
+    memcpy(&value, message->data.data(), sizeof(T));
+    return value;
+}
 
 struct RelayState {
     bool manualMode;

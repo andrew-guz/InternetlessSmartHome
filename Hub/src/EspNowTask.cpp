@@ -44,16 +44,13 @@ void EspNowTask(void* pvParameters) {
     while (true) {
         if (xQueueReceive(espNowMessagesQueue, &message, portMAX_DELAY) == pdTRUE) {
             if (message.type == MessageType::TEMPERATURE) {
-                float temperature;
-                memcpy(&temperature, message.data, sizeof(temperature));
+                float temperature = getMessageData<float>(message);
                 SetThermometerValue(message.sender, temperature);
             } else if (message.type == MessageType::RELAY_STATE) {
-                bool state;
-                memcpy(&state, message.data, sizeof(state));
+                bool state = getMessageData<bool>(message);
                 SetRelayState(message.sender, state);
             } else if (message.type == MessageType::THERMOSTAT_RELAY_STATE) {
-                RelayState state;
-                memcpy(&state, message.data, sizeof(state));
+                RelayState state = getMessageData<RelayState>(message);
                 SetThermostatRelayState(message.sender, state);
             }
         }
