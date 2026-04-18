@@ -1,9 +1,9 @@
 #include <Arduino.h>
 
-#include "include/Data.h"
-#include "include/EspNowTask.h"
+#include "include/Data.hpp"
+#include "include/EspNowTask.hpp"
 #include "include/Messages.hpp"
-#include "include/MonitorTask.h"
+#include "include/MonitorTask.hpp"
 
 TaskHandle_t monitorTaskHandle = nullptr;
 TaskHandle_t espNowTaskHandle = nullptr;

@@ -2,10 +2,10 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#include "Display.h"
-#include "Memory.h"
+#include "Display.hpp"
+#include "Memory.hpp"
 #include "Messages.hpp"
-#include "Temperature.h"
+#include "Temperature.hpp"
 
 OLEDDisplay display;
 I2CTemperatureSensor thermometer;

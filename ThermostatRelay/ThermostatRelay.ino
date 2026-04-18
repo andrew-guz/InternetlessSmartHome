@@ -3,7 +3,7 @@
 #include <cstring>
 #include <espnow.h>
 
-#include "Memory.h"
+#include "Memory.hpp"
 #include "Messages.hpp"
 
 Memory memory;

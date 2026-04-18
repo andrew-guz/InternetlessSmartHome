@@ -1,11 +1,11 @@
-#include "../include/EspNowTask.h"
+#include "../include/EspNowTask.hpp"
 
 #include <Arduino.h>
 #include <WiFi.h>
 #include <cstdint>
 #include <esp_now.h>
 
-#include "../include/Data.h"
+#include "../include/Data.hpp"
 #include "../include/Messages.hpp"
 
 void OnDataSent(const esp_now_send_info_t* tx_info, esp_now_send_status_t status) {}
