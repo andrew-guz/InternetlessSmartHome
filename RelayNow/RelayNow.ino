@@ -1,19 +1,19 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
+#include <cstring>
 #include <espnow.h>
 
-#include "Display.h"
 #include "Memory.h"
 #include "Messages.hpp"
-#include "Temperature.h"
 
-OLEDDisplay display;
-I2CTemperatureSensor thermometer;
 Memory memory;
 
+#define RELAY_PIN        LED_BUILTIN
+#define ON_BY_HIGH_LEVEL false
+
 unsigned long lastUpdate = 0;
-int brightness = 2;
+bool state;
 
 Mac mac;
 
@@ -24,29 +24,29 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
         return;
 
     Message* message = (Message*)incomingData;
-    if (message->type == MessageType::THERMOMETER_BRIGHTNESS && message->dataSize == sizeof(int)) {
-        int newValue;
-        memcpy(&newValue, message->data, sizeof(int));
-
-        if (newValue != brightness) {
-            brightness = newValue;
-            memory.Save("brightness", brightness);
-
-            display.SetBrightness(brightness);
+    if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0 && message->type == MessageType::RELAY_SET_STATE &&
+        message->dataSize == sizeof(bool)) {
+        bool newState;
+        memcpy(&newState, message->data, sizeof(newState));
+        if (newState != state) {
+            state = newState;
+            digitalWrite(RELAY_PIN, state ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+            memory.Save("state", state);
         }
     }
 }
 
 void setup() {
+    Serial.begin(115200);
+
     wifi_get_macaddr(STATION_IF, mac.data());
 
-    display.Setup();
-    thermometer.Setup();
     memory.Setup();
 
-    brightness = memory.Load("brightness", 2);
+    state = memory.Load("state", false);
 
-    display.SetBrightness(brightness);
+    pinMode(RELAY_PIN, OUTPUT);
+    digitalWrite(RELAY_PIN, state ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
 
     WiFi.mode(WIFI_STA);
 
@@ -63,17 +63,13 @@ void loop() {
     if (millis() - lastUpdate > 1000) {
         lastUpdate = millis();
 
-        float temperature = thermometer.GetTemperature();
-        display.SetFont(OLEDDisplay::OLEDDisplay::Font::Font_18pt7b);
-        display.ShowString(String(temperature, 1) + String(" C"));
-
         Message message{
-            .type = MessageType::TEMPERATURE,
+            .type = MessageType::RELAY_STATE,
         };
         memcpy(message.sender.data(), mac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
-        memcpy(message.data, &temperature, sizeof(temperature));
-        message.dataSize = sizeof(temperature);
+        memcpy(message.data, &state, sizeof(bool));
+        message.dataSize = sizeof(bool);
 
         esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));
     }
