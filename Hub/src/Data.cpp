@@ -3,137 +3,131 @@
 #include <Arduino.h>
 #include <WString.h>
 #include <map>
-#include <set>
-#include <string>
+
+#include "../include/Messages.hpp"
 
 SemaphoreHandle_t mutex = NULL;
 
-std::set<String> thermometers;
-std::set<String> relays;
-std::set<String> thermostatRelays;
+std::map<Mac, float> thermometerValues;
+std::map<Mac, bool> relayStates;
+std::map<Mac, RelayState> thermostatRelayStates;
 
-std::map<String, float> thermometerValues;
-std::map<String, bool> relayState;
-std::map<String, bool> thermostatRelayState;
+std::unordered_map<Mac, String, MacHash> names;
 
-void ClearData() {
-    xSemaphoreTake(mutex, portMAX_DELAY);
-
-    thermometers.clear();
-    relays.clear();
-    thermostatRelays.clear();
-    thermometerValues.clear();
-    relayState.clear();
-
-    xSemaphoreGive(mutex);
+void LoadData() {
+    // TODO load from memory
 }
 
-std::set<String> ListThermometers() {
+std::set<Mac> ListThermometers() {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    std::set<String> result = thermometers;
+    std::set<Mac> result;
+    for (const auto& pair : thermometerValues) {
+        result.insert(pair.first);
+    }
 
     xSemaphoreGive(mutex);
 
     return result;
 }
 
-std::set<String> ListRelays() {
+std::set<Mac> ListRelays() {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    std::set<String> result = relays;
+    std::set<Mac> result;
+    for (const auto& pair : relayStates) {
+        result.insert(pair.first);
+    }
 
     xSemaphoreGive(mutex);
 
     return result;
 }
 
-std::set<String> ListThermostatRelays() {
+std::set<Mac> ListThermostatRelays() {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    std::set<String> result = thermostatRelays;
+    std::set<Mac> result;
+    for (const auto& pair : thermostatRelayStates) {
+        result.insert(pair.first);
+    }
 
     xSemaphoreGive(mutex);
 
     return result;
 }
 
-void AddThermometer(const String& ssid) {
+void SetThermometerValue(const Mac& mac, float value) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    thermometers.insert(ssid);
-    thermometerValues[ssid] = 0;
+    thermometerValues[mac] = value;
 
     xSemaphoreGive(mutex);
 }
 
-void AddRelay(const String& ssid) {
+void SetRelayState(const Mac& mac, bool state) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    relays.insert(ssid);
-    relayState[ssid] = false;
+    relayStates[mac] = state;
 
     xSemaphoreGive(mutex);
 }
 
-void AddThermostatRelay(const String& ssid) {
+void SetThermostatRelayState(const Mac& mac, const RelayState& state) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    thermostatRelays.insert(ssid);
+    thermostatRelayStates[mac] = state;
 
     xSemaphoreGive(mutex);
 }
 
-void SetThermometerValue(const String& ssid, float value) {
+float GetThermometerValue(const Mac& mac) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    thermometerValues[ssid] = value;
-
-    xSemaphoreGive(mutex);
-}
-
-void SetRelayState(const String& ssid, bool state) {
-    xSemaphoreTake(mutex, portMAX_DELAY);
-
-    relayState[ssid] = state;
-
-    xSemaphoreGive(mutex);
-}
-
-void SetThermostatRelayState(const String& ssid, bool state) {
-    xSemaphoreTake(mutex, portMAX_DELAY);
-
-    thermostatRelayState[ssid] = state;
-
-    xSemaphoreGive(mutex);
-}
-
-float GetThermometerValue(const String& ssid) {
-    xSemaphoreTake(mutex, portMAX_DELAY);
-
-    const float value = thermometerValues[ssid];
+    const float value = thermometerValues[mac];
 
     xSemaphoreGive(mutex);
 
     return value;
 }
 
-bool GetRelayState(const String& ssid) {
+bool GetRelayState(const Mac& mac) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    const bool state = relayState[ssid];
+    const bool state = relayStates[mac];
 
     xSemaphoreGive(mutex);
 
     return state;
 }
 
-bool GetThermostatRelayState(const String& ssid) {
+RelayState GetThermostatRelayState(const Mac& mac) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
-    const bool state = thermostatRelayState[ssid];
+    const RelayState state = thermostatRelayStates[mac];
 
     xSemaphoreGive(mutex);
 
     return state;
+}
+
+void SetName(const Mac& mac, const String& name) {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    names[mac] = name;
+
+    xSemaphoreGive(mutex);
+}
+
+String GetName(const Mac& mac) {
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    String name;
+    auto iter = names.find(mac);
+    if (iter != names.end())
+        name = iter->second;
+
+    xSemaphoreGive(mutex);
+
+    return name;
 }

@@ -2,8 +2,23 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 
 typedef std::array<std::uint8_t, 6> Mac;
+
+struct MacHash {
+    std::size_t operator()(const Mac& mac) const noexcept {
+        std::size_t hash = 0;
+        for (auto b : mac) {
+            hash = (hash * 31) ^ b;
+        }
+        return hash;
+    }
+};
+
+inline bool operator==(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) == 0; }
+
+inline bool operator!=(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) != 0; }
 
 enum class MessageType : std::uint8_t {
     TEMPERATURE,                        // sent by thermometer
@@ -26,4 +41,13 @@ struct Message {
     MessageType type;
     char data[DATA_SIZE];
     std::uint8_t dataSize;
+};
+
+struct RelayState {
+    bool manualMode;
+    bool manualState;
+    Mac thermometer;
+    float targetTemperature;
+    float temperatureDelta;
+    bool temperatureState;
 };

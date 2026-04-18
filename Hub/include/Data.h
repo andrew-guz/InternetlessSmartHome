@@ -5,41 +5,40 @@
 #include <WString.h>
 #include <map>
 #include <set>
+#include <unordered_map>
+
+#include "Messages.hpp"
 
 extern SemaphoreHandle_t mutex;
 
-extern std::set<String> thermometers;
-extern std::set<String> relays;
-extern std::set<String> thermostatRelays;
+extern std::map<Mac, float> thermometerValues;
+extern std::map<Mac, bool> relayStates;
+extern std::map<Mac, RelayState> thermostatRelayStates;
 
-extern std::map<String, float> thermometerValues;
-extern std::map<String, bool> relayState;
-extern std::map<String, bool> thermostatRelayState;
+extern std::unordered_map<Mac, String, MacHash> names;
 
-void ClearData();
+void LoadData();
 
-std::set<String> ListThermometers();
+std::set<Mac> ListThermometers();
 
-std::set<String> ListRelays();
+std::set<Mac> ListRelays();
 
-std::set<String> ListThermostatRelays();
+std::set<Mac> ListThermostatRelays();
 
-void AddThermometer(const String& ssid);
+void SetThermometerValue(const Mac& mac, float value);
 
-void AddRelay(const String& ssid);
+void SetRelayState(const Mac& mac, bool state);
 
-void AddThermostatRelay(const String& ssid);
+void SetThermostatRelayState(const Mac& mac, const RelayState& state);
 
-void SetThermometerValue(const String& ssid, float value);
+float GetThermometerValue(const Mac& mac);
 
-void SetRelayState(const String& ssid, bool state);
+bool GetRelayState(const Mac& mac);
 
-void SetThermostatRelayState(const String& ssid, bool state);
+RelayState GetThermostatRelayState(const Mac& mac);
 
-float GetThermometerValue(const String& ssid);
+void SetName(const Mac& mac, const String& name);
 
-bool GetRelayState(const String& ssid);
-
-bool GetThermostatRelayState(const String& ssid);
+String GetName(const Mac& mac);
 
 #endif // _DATA_H_

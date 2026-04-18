@@ -7,15 +7,6 @@
 #include "Memory.h"
 #include "Messages.hpp"
 
-struct RelayState {
-    bool manualMode;
-    bool manualState;
-    Mac thermometer;
-    float targetTemperature;
-    float temperatureDelta;
-    bool temperatureState;
-};
-
 Memory memory;
 
 #define RELAY_PIN        LED_BUILTIN
