@@ -1,12 +1,14 @@
 #include <Arduino.h>
 
-#include "include/Data.hpp"
-#include "include/EspNowTask.hpp"
-#include "include/Messages.hpp"
-#include "include/MonitorTask.hpp"
+#include "./include/Data.hpp"
+#include "./include/EspNowTask.hpp"
+#include "./include/Messages.hpp"
+#include "./include/MonitorTask.hpp"
+#include "./include/SmsTask.hpp"
 
 TaskHandle_t monitorTaskHandle = nullptr;
 TaskHandle_t espNowTaskHandle = nullptr;
+TaskHandle_t smsTaskHandle = nullptr;
 
 #define ESP_NOW_MESSAGE_QUEUE_SIZE 100
 
@@ -27,6 +29,7 @@ void setup() {
 
     xTaskCreate(MonitorTask, "Monitor task", 16384, NULL, 1, &monitorTaskHandle);
     xTaskCreate(EspNowTask, "ESP-NOW task", 16384, NULL, 1, &espNowTaskHandle);
+    xTaskCreate(SmsTask, "SMS task", 16384, NULL, 1, &smsTaskHandle);
 }
 
 void loop() { vTaskDelete(NULL); }
