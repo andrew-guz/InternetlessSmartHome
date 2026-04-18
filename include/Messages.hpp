@@ -1,7 +1,9 @@
 #pragma once
 
+#include <WString.h>
 #include <array>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 
 typedef std::array<std::uint8_t, 6> Mac;
@@ -19,6 +21,12 @@ struct MacHash {
 inline bool operator==(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) == 0; }
 
 inline bool operator!=(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) != 0; }
+
+inline String MacToString(const Mac& mac) {
+    char buffer[18];
+    snprintf(buffer, sizeof(buffer), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return String(buffer);
+}
 
 enum class MessageType : std::uint8_t {
     TEMPERATURE,                        // sent by thermometer

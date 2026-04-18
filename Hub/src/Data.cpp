@@ -127,6 +127,8 @@ String GetName(const Mac& mac) {
     auto iter = names.find(mac);
     if (iter != names.end())
         name = iter->second;
+    else
+        name = MacToString(mac);
 
     xSemaphoreGive(mutex);
 
