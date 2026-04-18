@@ -1,64 +1,78 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <WString.h>
+#include <ESP8266WiFi.h>
+#include <cstring>
+#include <espnow.h>
 
-#include "Defines.h"
-#include "DeviceDefines.h"
 #include "Memory.h"
-#include "WiFi.h"
+#include "Messages.hpp"
 
-WiFiDataServer server;
 Memory memory;
 
-bool on = false;
+#define RELAY_PIN        LED_BUILTIN
+#define ON_BY_HIGH_LEVEL false
+
+unsigned long lastUpdate = 0;
+bool state;
+
+Mac mac;
+
+void OnDataSent(std::uint8_t* mac_addr, const std::uint8_t sendStatus) {}
+
+void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::uint8_t len) {
+    if (len != sizeof(Message))
+        return;
+
+    Message* message = (Message*)incomingData;
+    if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0 && message->type == MessageType::RELAY_SET_STATE &&
+        message->dataSize == sizeof(bool)) {
+        bool newState;
+        memcpy(&newState, message->data, sizeof(newState));
+        if (newState != state) {
+            state = newState;
+            digitalWrite(RELAY_PIN, state ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+            memory.Save("state", state);
+        }
+    }
+}
 
 void setup() {
-    pinMode(RELAY_PIN, OUTPUT);
+    Serial.begin(115200);
 
-    server.Setup(DEVICE_WIFI_SSID, WIFI_PASSWORD);
+    wifi_get_macaddr(STATION_IF, mac.data());
+
     memory.Setup();
 
-    on = memory.Load("on", false);
-    digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
+    state = memory.Load("state", false);
 
-    server.Register("/type", HTTPMethod::HTTP_GET, [&]() {
-        return WiFiDataServer::Response{
-            .code = 200,
-            .contentType = "text/plain",
-            .content = DEVICE_TYPE,
-        };
-    });
-    server.Register("/state", HTTPMethod::HTTP_GET, [&]() {
-        return WiFiDataServer::Response{
-            .code = 200,
-            .contentType = "text/plain",
-            .content = on ? "true" : "false",
-        };
-    });
-    server.Register("/state", HTTPMethod::HTTP_POST, [&](const String& body) {
-        const bool newValue = body == "true";
-        if (newValue != on) {
-            on = newValue;
-            memory.Save("on", on); // for future - need normal memory 1 write/hour = ~11 years
+    pinMode(RELAY_PIN, OUTPUT);
+    digitalWrite(RELAY_PIN, state ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
 
-            digitalWrite(RELAY_PIN, on ? (ON_BY_HIGH_LEVEL ? HIGH : LOW) : (ON_BY_HIGH_LEVEL ? LOW : HIGH));
-        }
+    WiFi.mode(WIFI_STA);
 
-        return WiFiDataServer::Response{
-            .code = 200,
-            .contentType = "text/plain",
-            .content = "OK",
-        };
-    });
+    esp_now_init();
 
-    ArduinoOTA.setHostname(DEVICE_OTA_NAME);
-    ArduinoOTA.setPasswordHash(OTA_PASSWORD);
-    ArduinoOTA.begin();
+    esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+    esp_now_register_send_cb(OnDataSent);
+    esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop() {
-    server.Loop();
-    ArduinoOTA.handle();
+    static std::uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+    if (millis() - lastUpdate > 1000) {
+        lastUpdate = millis();
+
+        Message message{
+            .type = MessageType::RELAY_STATE,
+        };
+        memcpy(message.sender.data(), mac.data(), 6);
+        memcpy(message.receiver.data(), broadcast, 6);
+        memcpy(message.data, &state, sizeof(bool));
+        message.dataSize = sizeof(bool);
+
+        esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));
+    }
 
     delay(1);
 }
