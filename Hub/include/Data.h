@@ -10,6 +10,7 @@
 #include "Messages.hpp"
 
 extern SemaphoreHandle_t mutex;
+extern QueueHandle_t espNowMessagesQueue;
 
 extern std::map<Mac, float> thermometerValues;
 extern std::map<Mac, bool> relayStates;

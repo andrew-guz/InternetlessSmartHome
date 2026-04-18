@@ -6,7 +6,8 @@
 
 #include "../include/Messages.hpp"
 
-SemaphoreHandle_t mutex = NULL;
+SemaphoreHandle_t mutex = nullptr;
+extern QueueHandle_t espNowMessagesQueue = nullptr;
 
 std::map<Mac, float> thermometerValues;
 std::map<Mac, bool> relayStates;
