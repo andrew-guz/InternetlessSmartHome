@@ -3,30 +3,9 @@
 #include <WString.h>
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 
-typedef std::array<std::uint8_t, 6> Mac;
-
-struct MacHash {
-    std::size_t operator()(const Mac& mac) const noexcept {
-        std::size_t hash = 0;
-        for (auto b : mac) {
-            hash = (hash * 31) ^ b;
-        }
-        return hash;
-    }
-};
-
-inline bool operator==(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) == 0; }
-
-inline bool operator!=(const Mac& lhs, const Mac& rhs) { return memcmp(lhs.data(), rhs.data(), sizeof(Mac)) != 0; }
-
-inline String MacToString(const Mac& mac) {
-    char buffer[18];
-    snprintf(buffer, sizeof(buffer), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    return String(buffer);
-}
+#include "Mac.hpp"
 
 enum class MessageType : std::uint8_t {
     TEMPERATURE,                        // sent by thermometer

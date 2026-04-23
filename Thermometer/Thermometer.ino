@@ -6,7 +6,6 @@
 #include "Memory.hpp"
 #include "Messages.hpp"
 #include "Temperature.hpp"
-#include "include/Messages.hpp"
 
 OLEDDisplay display;
 I2CTemperatureSensor thermometer;

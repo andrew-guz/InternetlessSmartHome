@@ -2,9 +2,11 @@
 
 #include "./include/Data.hpp"
 #include "./include/EspNowTask.hpp"
-#include "./include/Messages.hpp"
+#include "./include/Memory.hpp"
 #include "./include/MonitorTask.hpp"
 #include "./include/SmsTask.hpp"
+
+Memory memory;
 
 TaskHandle_t monitorTaskHandle = nullptr;
 TaskHandle_t espNowTaskHandle = nullptr;
@@ -19,7 +21,7 @@ void setup() {
 
     espNowMessagesQueue = xQueueCreate(ESP_NOW_MESSAGE_QUEUE_SIZE, sizeof(Message));
 
-    LoadData();
+    LoadData(memory);
 
     MonitorTaskInit();
 

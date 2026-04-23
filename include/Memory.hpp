@@ -2,7 +2,9 @@
 
 #include <Preferences.h>
 #include <WString.h>
-#include <array>
+#include <unordered_map>
+
+#include "Mac.hpp"
 
 class Memory {
 public:
@@ -59,14 +61,62 @@ inline bool Memory::Load<bool>(const char* name, bool defaultValue) {
 }
 
 template<>
-inline void Memory::Save<std::array<std::uint8_t, 6>>(const char* name, const std::array<std::uint8_t, 6>& data) {
+inline void Memory::Save<Mac>(const char* name, const Mac& data) {
     _preferences.putBytes(name, data.data(), 6);
 }
 
 template<>
-inline std::array<std::uint8_t, 6> Memory::Load<std::array<std::uint8_t, 6>>(const char* name, std::array<std::uint8_t, 6> defaultValue) {
-    std::array<std::uint8_t, 6> data;
+inline Mac Memory::Load<Mac>(const char* name, Mac defaultValue) {
+    Mac data;
     if (_preferences.getBytes(name, data.data(), 6) != 6)
         return defaultValue;
+
     return data;
+}
+
+template<>
+inline void Memory::Save<std::unordered_map<Mac, String, MacHash>>(const char* name, const std::unordered_map<Mac, String, MacHash>& data) {
+    String macKeysString;
+    for (const auto& [mac, deviceName] : data) {
+        String macString = MacToShortString(mac); // 12 symbols
+        String key = "m/" + macString;            // must be < 15 symbols
+        macKeysString += key + ";";
+        _preferences.putString(key.c_str(), deviceName);
+    }
+
+    _preferences.putString(name, macKeysString);
+}
+
+template<>
+inline std::unordered_map<Mac, String, MacHash>
+Memory::Load<std::unordered_map<Mac, String, MacHash>>(const char* name, std::unordered_map<Mac, String, MacHash> defaultValue) {
+    std::unordered_map<Mac, String, MacHash> data;
+
+    String macKeysString = _preferences.getString(name);
+    if (macKeysString.isEmpty())
+        return defaultValue;
+
+    int startIndex = 0;
+    int separatorIndex = -1;
+    String part;
+
+    do {
+        separatorIndex = macKeysString.indexOf(';', startIndex);
+
+        if (separatorIndex == -1) {
+            part = macKeysString;
+        } else {
+            part = macKeysString.substring(startIndex, separatorIndex);
+        }
+
+        // Проверка на пустую строку
+        if (part.length() > 0) {
+            String macString = part.substring(2);
+            Mac mac = MacFromShortString(macString);
+            String name = _preferences.getString(part.c_str());
+            data[mac] = name;
+        }
+
+        startIndex = separatorIndex + 1;
+    } while (separatorIndex != -1 && startIndex <= macKeysString.length());
 }

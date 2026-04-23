@@ -4,6 +4,8 @@
 #include <WString.h>
 #include <map>
 
+#include "../include/Mac.hpp"
+#include "../include/Memory.hpp"
 #include "../include/Messages.hpp"
 
 SemaphoreHandle_t mutex = nullptr;
@@ -15,9 +17,7 @@ std::map<Mac, RelayState> thermostatRelayStates;
 
 std::unordered_map<Mac, String, MacHash> names;
 
-void LoadData() {
-    // TODO load from memory
-}
+void LoadData(Memory& memory) { names = memory.Load("names", std::unordered_map<Mac, String, MacHash>()); }
 
 std::set<Mac> ListThermometers() {
     xSemaphoreTake(mutex, portMAX_DELAY);
