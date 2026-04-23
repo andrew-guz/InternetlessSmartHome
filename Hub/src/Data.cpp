@@ -17,7 +17,9 @@ std::map<Mac, RelayState> thermostatRelayStates;
 
 std::unordered_map<Mac, String, MacHash> names;
 
-void LoadData(Memory& memory) { names = memory.Load("names", std::unordered_map<Mac, String, MacHash>()); }
+extern Memory memory;
+
+void LoadData() { names = memory.Load("names", std::unordered_map<Mac, String, MacHash>()); }
 
 std::set<Mac> ListThermometers() {
     xSemaphoreTake(mutex, portMAX_DELAY);
@@ -116,6 +118,8 @@ void SetName(const Mac& mac, const String& name) {
     xSemaphoreTake(mutex, portMAX_DELAY);
 
     names[mac] = name;
+
+    memory.Save("names", names);
 
     xSemaphoreGive(mutex);
 }

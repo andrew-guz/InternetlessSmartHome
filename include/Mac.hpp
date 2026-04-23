@@ -27,10 +27,28 @@ inline String MacToString(const Mac& mac) {
     snprintf(buffer, sizeof(buffer), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     return String(buffer);
 }
+
 inline String MacToShortString(const Mac& mac) {
     char buffer[13];
     snprintf(buffer, sizeof(buffer), "%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     return String(buffer);
+}
+
+inline Mac MacFromString(const String& str) {
+    Mac mac;
+
+    memset(mac.data(), 0, mac.size());
+
+    if (str.length() != 17) {
+        return mac;
+    }
+
+    for (std::size_t i = 0; i < mac.size(); ++i) {
+        String byteStr = str.substring(i * 3, (i * 3) + 2);
+        mac[i] = (std::uint8_t)strtol(byteStr.c_str(), NULL, 16);
+    }
+
+    return mac;
 }
 
 inline Mac MacFromShortString(const String& str) {

@@ -21,7 +21,7 @@ void setup() {
 
     espNowMessagesQueue = xQueueCreate(ESP_NOW_MESSAGE_QUEUE_SIZE, sizeof(Message));
 
-    LoadData(memory);
+    LoadData();
 
     MonitorTaskInit();
 

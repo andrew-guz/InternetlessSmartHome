@@ -3,8 +3,10 @@
 #include <Preferences.h>
 #include <WString.h>
 #include <unordered_map>
+#include <vector>
 
 #include "Mac.hpp"
+#include "Utils.hpp"
 
 class Memory {
 public:
@@ -96,27 +98,12 @@ Memory::Load<std::unordered_map<Mac, String, MacHash>>(const char* name, std::un
     if (macKeysString.isEmpty())
         return defaultValue;
 
-    int startIndex = 0;
-    int separatorIndex = -1;
-    String part;
+    std::vector<String> parts = SplitString(macKeysString, ';');
+    for (const String& part : parts) {
+        Mac mac = MacFromShortString(part);
+        String name = _preferences.getString(part.c_str());
+        data[mac] = name;
+    }
 
-    do {
-        separatorIndex = macKeysString.indexOf(';', startIndex);
-
-        if (separatorIndex == -1) {
-            part = macKeysString;
-        } else {
-            part = macKeysString.substring(startIndex, separatorIndex);
-        }
-
-        // Проверка на пустую строку
-        if (part.length() > 0) {
-            String macString = part.substring(2);
-            Mac mac = MacFromShortString(macString);
-            String name = _preferences.getString(part.c_str());
-            data[mac] = name;
-        }
-
-        startIndex = separatorIndex + 1;
-    } while (separatorIndex != -1 && startIndex <= macKeysString.length());
+    return data;
 }

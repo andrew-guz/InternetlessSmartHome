@@ -9,7 +9,6 @@
 
 #include "Mac.hpp"
 #include "Messages.hpp"
-#include "Memory.hpp"
 
 extern SemaphoreHandle_t mutex;
 extern QueueHandle_t espNowMessagesQueue;
@@ -20,7 +19,7 @@ extern std::map<Mac, RelayState> thermostatRelayStates;
 
 extern std::unordered_map<Mac, String, MacHash> names;
 
-void LoadData(Memory& memory);
+void LoadData();
 
 std::set<Mac> ListThermometers();
 
