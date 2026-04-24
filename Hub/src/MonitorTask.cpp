@@ -1,13 +1,13 @@
 #include "../include/MonitorTask.hpp"
 
 #include <Arduino.h>
-#include <LCDI2C_Multilingual.h>
+#include <LiquidCrystal_I2C.h>
 #include <set>
 
 #include "./include/Data.hpp"
 #include "./include/Messages.hpp"
 
-LCDI2C_Generic lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 void MonitorTaskInit() {
     lcd.init();
