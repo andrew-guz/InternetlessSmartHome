@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <WString.h>
 #include <map>
+#include <optional>
 #include <set>
 #include <unordered_map>
 
@@ -42,5 +43,7 @@ RelayState GetThermostatRelayState(const Mac& mac);
 void SetName(const Mac& mac, const String& name);
 
 String GetName(const Mac& mac);
+
+std::optional<Mac> FindMacByName(const String& name);
 
 #endif // _DATA_H_

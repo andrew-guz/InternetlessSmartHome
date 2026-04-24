@@ -85,8 +85,7 @@ void setup() {
 
     relayState.manualMode = memory.Load("manualMode", false);
     relayState.manualState = memory.Load("manualState", false);
-    // relayState.thermometer = memory.Load("thermometer", Mac{}); // TODO while no HUB to configure
-    relayState.thermometer = { 0x48, 0x55, 0x19, 0x7B, 0x3B, 0xFD };
+    relayState.thermometer = memory.Load("thermometer", Mac{});
     relayState.targetTemperature = memory.Load("targetTemperature", 20.0f);
     relayState.temperatureDelta = memory.Load("temperatureDelta", 0.5f);
     relayState.temperatureState = memory.Load("temperatureState", false);

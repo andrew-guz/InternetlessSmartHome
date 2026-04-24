@@ -138,3 +138,20 @@ String GetName(const Mac& mac) {
 
     return name;
 }
+
+std::optional<Mac> FindMacByName(const String& name) {
+    std::optional<Mac> result = std::nullopt;
+
+    xSemaphoreTake(mutex, portMAX_DELAY);
+
+    for (const auto& [mac, macName] : names) {
+        if (name == macName) {
+            result = mac;
+            break;
+        }
+    }
+
+    xSemaphoreGive(mutex);
+
+    return result;
+}
