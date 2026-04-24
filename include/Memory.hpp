@@ -80,10 +80,9 @@ template<>
 inline void Memory::Save<std::unordered_map<Mac, String, MacHash>>(const char* name, const std::unordered_map<Mac, String, MacHash>& data) {
     String macKeysString;
     for (const auto& [mac, deviceName] : data) {
-        String macString = MacToShortString(mac); // 12 symbols
-        String key = "m/" + macString;            // must be < 15 symbols
-        macKeysString += key + ";";
-        _preferences.putString(key.c_str(), deviceName);
+        String macString = MacToShortString(mac);
+        macKeysString += macString + ";";
+        _preferences.putString(macString.c_str(), deviceName);
     }
 
     _preferences.putString(name, macKeysString);

@@ -17,6 +17,8 @@ TaskHandle_t smsTaskHandle = nullptr;
 void setup() {
     Serial.begin(115200);
 
+    memory.Setup();
+
     mutex = xSemaphoreCreateMutex();
 
     espNowMessagesQueue = xQueueCreate(ESP_NOW_MESSAGE_QUEUE_SIZE, sizeof(Message));
