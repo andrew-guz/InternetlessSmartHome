@@ -14,7 +14,7 @@ Memory memory;
 unsigned long lastUpdate = 0;
 bool state;
 
-Mac mac;
+Mac myMac;
 
 void OnDataSent(std::uint8_t* mac_addr, const std::uint8_t sendStatus) {}
 
@@ -23,7 +23,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
         return;
 
     Message* message = (Message*)incomingData;
-    if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0 && message->type == MessageType::RELAY_SET_STATE &&
+    if (memcmp(message->receiver.data(), myMac.data(), sizeof(Mac)) == 0 && message->type == MessageType::RELAY_SET_STATE &&
         message->dataSize == sizeof(bool)) {
         bool newState = getMessageData<bool>(message);
         if (newState != state) {
@@ -37,7 +37,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
 void setup() {
     Serial.begin(115200);
 
-    wifi_get_macaddr(STATION_IF, mac.data());
+    wifi_get_macaddr(STATION_IF, myMac.data());
 
     memory.Setup();
 
@@ -64,7 +64,7 @@ void loop() {
         Message message{
             .type = MessageType::RELAY_STATE,
         };
-        memcpy(message.sender.data(), mac.data(), 6);
+        memcpy(message.sender.data(), myMac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
         setMessageData(message, state);
         message.dataSize = sizeof(bool);

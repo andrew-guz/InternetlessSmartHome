@@ -14,7 +14,7 @@ Memory memory;
 unsigned long lastUpdate = 0;
 int brightness = 2;
 
-Mac mac;
+Mac myMac;
 
 void OnDataSent(std::uint8_t* mac_addr, const std::uint8_t sendStatus) {}
 
@@ -23,7 +23,8 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
         return;
 
     Message* message = (Message*)incomingData;
-    if (message->type == MessageType::THERMOMETER_BRIGHTNESS && message->dataSize == sizeof(int)) {
+    if (memcmp(message->receiver.data(), myMac.data(), sizeof(Mac)) == 0 && message->type == MessageType::THERMOMETER_BRIGHTNESS &&
+        message->dataSize == sizeof(int)) {
         int newValue = getMessageData<int>(message);
         if (newValue != brightness) {
             brightness = newValue;
@@ -35,7 +36,9 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
 }
 
 void setup() {
-    wifi_get_macaddr(STATION_IF, mac.data());
+    Serial.begin(115200);
+
+    wifi_get_macaddr(STATION_IF, myMac.data());
 
     display.Setup();
     thermometer.Setup();
@@ -67,7 +70,7 @@ void loop() {
         Message message{
             .type = MessageType::TEMPERATURE,
         };
-        memcpy(message.sender.data(), mac.data(), 6);
+        memcpy(message.sender.data(), myMac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
         setMessageData(message, temperature);
         message.dataSize = sizeof(temperature);

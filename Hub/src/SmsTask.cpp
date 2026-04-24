@@ -1,11 +1,18 @@
 #include "../include/SmsTask.hpp"
 
 #include <Arduino.h>
+#include <esp_now.h>
 #include <vector>
 
 #include "../include/Data.hpp"
 #include "../include/Mac.hpp"
 #include "../include/Utils.hpp"
+
+namespace {
+    static std::uint8_t broadcast[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+}
+
+extern Mac myMac;
 
 void ProcessCommand(const String& command) {
     if (command.startsWith("NAME;")) {
@@ -46,16 +53,29 @@ void ProcessCommand(const String& command) {
 
         const int brightness = brightnessString.toInt();
 
+        Mac thermometerMac;
         if (parts[1].indexOf(":") != -1) {
-            Mac mac = MacFromString(parts[1]);
-            // send brightness message
+            thermometerMac = MacFromString(parts[1]);
         } else {
             const String oldName = parts[1];
-            const std::optional<Mac> mac = FindMacByName(oldName);
-            if (mac.has_value()) {
-                // send brightness message
+            const std::optional<Mac> macByName = FindMacByName(oldName);
+            if (!macByName.has_value()) {
+                return;
             }
+
+            thermometerMac = macByName.value();
         }
+
+        // send brightness message
+        Message message{
+            .type = MessageType::THERMOMETER_BRIGHTNESS,
+        };
+        memcpy(message.sender.data(), myMac.data(), 6);
+        memcpy(message.receiver.data(), thermometerMac.data(), 6);
+        setMessageData(message, brightness);
+        message.dataSize = sizeof(brightness);
+
+        esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));
     }
 }
 

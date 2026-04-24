@@ -14,7 +14,7 @@ Memory memory;
 unsigned long lastUpdate = 0;
 RelayState relayState;
 
-Mac mac;
+Mac myMac;
 
 void OnDataSent(std::uint8_t* mac_addr, const std::uint8_t sendStatus) {}
 
@@ -38,7 +38,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
                 memory.Save("temperatureState", relayState.temperatureState);
             }
         }
-    } else if (memcmp(message->receiver.data(), mac.data(), sizeof(Mac)) == 0) {
+    } else if (memcmp(message->receiver.data(), myMac.data(), sizeof(Mac)) == 0) {
         if (message->type == MessageType::THERMOSTAT_RELAY_MANUAL_MODE && message->dataSize == sizeof(bool)) {
             bool manualMode = getMessageData<bool>(message);
             if (manualMode != relayState.manualMode) {
@@ -79,7 +79,7 @@ void OnDataRecv(std::uint8_t* mac_addr, std::uint8_t* incomingData, const std::u
 void setup() {
     Serial.begin(115200);
 
-    wifi_get_macaddr(STATION_IF, mac.data());
+    wifi_get_macaddr(STATION_IF, myMac.data());
 
     memory.Setup();
 
@@ -115,7 +115,7 @@ void loop() {
         Message message{
             .type = MessageType::THERMOSTAT_RELAY_STATE,
         };
-        memcpy(message.sender.data(), mac.data(), 6);
+        memcpy(message.sender.data(), myMac.data(), 6);
         memcpy(message.receiver.data(), broadcast, 6);
         setMessageData(message, relayState);
         message.dataSize = sizeof(RelayState);

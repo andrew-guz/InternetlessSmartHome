@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <esp_mac.h>
+#include <esp_now.h>
 
 #include "./include/Data.hpp"
 #include "./include/EspNowTask.hpp"
@@ -14,8 +16,12 @@ TaskHandle_t smsTaskHandle = nullptr;
 
 #define ESP_NOW_MESSAGE_QUEUE_SIZE 100
 
+Mac myMac;
+
 void setup() {
     Serial.begin(115200);
+
+    esp_read_mac(myMac.data(), ESP_MAC_WIFI_STA);
 
     memory.Setup();
 
