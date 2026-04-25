@@ -7,8 +7,8 @@
 
 #include "../include/Data.hpp"
 #include "../include/Mac.hpp"
-#include "../include/Utils.hpp"
 #include "../include/Messages.hpp"
+#include "../include/Utils.hpp"
 #include "include/Messages.hpp"
 
 extern Mac myMac;
@@ -40,6 +40,22 @@ namespace {
         esp_now_send(broadcast, (std::uint8_t*)(&message), sizeof(message));
     }
 } // namespace
+
+void ProcessCommand(const String& command) {
+    if (command.startsWith("NAME;")) {
+        // NAME;00:00:00:00:00:00;newName$
+        // NAME;old_name;newName$
+        Rename(command);
+    } else if (command.startsWith("BRIGHTNESS;")) {
+        // BRIGHTNESS;00:00:00:00:00:00;value$
+        // BRIGHTNESS;name;value$
+        SetBrightness(command);
+    } else if (command.startsWith("STATE;")) {
+        // STATE;00:00:00:00:00:00;value$
+        // STATE;name;value$
+        SetState(command);
+    }
+}
 
 void Rename(const String& command) {
     // NAME;00:00:00:00:00:00;newName$
@@ -109,5 +125,5 @@ void SetState(const String& command) {
         return;
     }
 
-    //SendMessage(MessageType::RELAY_SET_STATE, receiverMac.value(), state);
+    // SendMessage(MessageType::RELAY_SET_STATE, receiverMac.value(), state);
 }

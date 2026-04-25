@@ -3,6 +3,8 @@
 
 #include <WString.h>
 
+void ProcessCommand(const String& command);
+
 // NAME;00:00:00:00:00:00;newName$
 // NAME;old_name;newName$
 void Rename(const String& command);
