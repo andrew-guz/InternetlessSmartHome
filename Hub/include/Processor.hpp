@@ -5,16 +5,16 @@
 
 void ProcessCommand(const String& command);
 
-// NAME;00:00:00:00:00:00;newName$
-// NAME;old_name;newName$
+// SET_NAME;00:00:00:00:00:00;newName$
+// SET_NAME;old_name;newName$
 void Rename(const String& command);
 
-// BRIGHTNESS;00:00:00:00:00:00;value$
-// BRIGHTNESS;name;value$
+// SET_BRIGHTNESS;00:00:00:00:00:00;value$
+// SET_BRIGHTNESS;name;value$
 void SetBrightness(const String& command);
 
-// STATE;00:00:00:00:00:00;value$
-// STATE;name;value$
+// SET_STATE;00:00:00:00:00:00;value$
+// SET_STATE;name;value$
 void SetState(const String& command);
 
 #endif // _PROCESSOR_H_

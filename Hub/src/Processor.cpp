@@ -42,24 +42,24 @@ namespace {
 } // namespace
 
 void ProcessCommand(const String& command) {
-    if (command.startsWith("NAME;")) {
-        // NAME;00:00:00:00:00:00;newName$
-        // NAME;old_name;newName$
+    if (command.startsWith("SET_NAME;")) {
+        // SET_NAME;00:00:00:00:00:00;newName$
+        // SET_NAME;old_name;newName$
         Rename(command);
-    } else if (command.startsWith("BRIGHTNESS;")) {
-        // BRIGHTNESS;00:00:00:00:00:00;value$
-        // BRIGHTNESS;name;value$
+    } else if (command.startsWith("SET_BRIGHTNESS;")) {
+        // SET_BRIGHTNESS;00:00:00:00:00:00;value$
+        // SET_BRIGHTNESS;name;value$
         SetBrightness(command);
-    } else if (command.startsWith("STATE;")) {
-        // STATE;00:00:00:00:00:00;value$
-        // STATE;name;value$
+    } else if (command.startsWith("SET_STATE;")) {
+        // SET_STATE;00:00:00:00:00:00;value$
+        // SET_STATE;name;value$
         SetState(command);
     }
 }
 
+// SET_NAME;00:00:00:00:00:00;newName$
+// SET_NAME;old_name;newName$
 void Rename(const String& command) {
-    // NAME;00:00:00:00:00:00;newName$
-    // NAME;old_name;newName$
     std::vector<String> parts = SplitString(command, ';');
     if (parts.size() != 3) {
         return;
@@ -82,9 +82,9 @@ void Rename(const String& command) {
     }
 }
 
+// SET_BRIGHTNESS;00:00:00:00:00:00;value$
+// SET_BRIGHTNESS;name;value$
 void SetBrightness(const String& command) {
-    // BRIGHTNESS;00:00:00:00:00:00;value$
-    // BRIGHTNESS;name;value$
     std::vector<String> parts = SplitString(command, ';');
     if (parts.size() != 3) {
         return;
@@ -105,8 +105,8 @@ void SetBrightness(const String& command) {
     SendMessage(MessageType::THERMOMETER_BRIGHTNESS, receiverMac.value(), brightness);
 }
 
-// STATE;00:00:00:00:00:00;value$
-// STATE;name;value$
+// SET_STATE;00:00:00:00:00:00;value$
+// SET_STATE;name;value$
 void SetState(const String& command) {
     std::vector<String> parts = SplitString(command, ';');
     if (parts.size() != 3) {
