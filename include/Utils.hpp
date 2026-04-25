@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _UTILS_H_
+#define _UTILS_H_
 
 #include <WString.h>
 #include <vector>
@@ -24,3 +25,5 @@ inline std::vector<String> SplitString(const String& str, char delimiter) {
 
     return result;
 }
+
+#endif // _UTILS_H_

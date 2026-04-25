@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
 
 #include <Preferences.h>
 #include <WString.h>
@@ -106,3 +107,5 @@ Memory::Load<std::unordered_map<Mac, String, MacHash>>(const char* name, std::un
 
     return data;
 }
+
+#endif // _MEMORY_H_

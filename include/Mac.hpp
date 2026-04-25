@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _MAC_H_
+#define _MAC_H_
 
 #include <WString.h>
 #include <array>
@@ -9,7 +10,7 @@
 typedef std::array<std::uint8_t, 6> Mac;
 
 struct MacHash {
-    std::size_t operator()(const Mac& mac) const noexcept {
+    inline std::size_t operator()(const Mac& mac) const noexcept {
         std::size_t hash = 0;
         for (auto b : mac) {
             hash = (hash * 31) ^ b;
@@ -67,3 +68,5 @@ inline Mac MacFromShortString(const String& str) {
 
     return mac;
 }
+
+#endif // _MAC_H_

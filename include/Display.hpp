@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DISPLAY_H_
+#define _DISPLAY_H_
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -80,3 +81,5 @@ private:
     Adafruit_SSD1306 _display;
     int _brightness = 2;
 };
+
+#endif // _DISPLAY_H_

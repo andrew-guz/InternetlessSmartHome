@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _MESSAGES_H_
+#define _MESSAGES_H_
 
 #include <WString.h>
 #include <array>
@@ -58,3 +59,5 @@ struct RelayState {
     float temperatureDelta;
     bool temperatureState;
 };
+
+#endif // _MESSAGES_H_
