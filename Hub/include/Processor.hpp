@@ -29,4 +29,18 @@ void SetManualMode(const String& command);
 // SET_MANUAL_STATE;ALL;value$
 void SetManualState(const String& command);
 
+// SET_RELAY_THERMOMETER;00:00:00:00:00:00;00:00:00:00:00:00$
+// SET_RELAY_THERMOMETER;name;00:00:00:00:00:00$
+void SetRelayThermometer(const String& command);
+
+// SET_RELAY_TEMPERATURE;00:00:00:00:00:00;value$
+// SET_RELAY_TEMPERATURE;name;value$
+// SET_RELAY_TEMPERATURE;ALL;value$
+void SetRelayTemperature(const String& command);
+
+// SET_RELAY_TEMPERATURE_DELTA;00:00:00:00:00:00;value$
+// SET_RELAY_TEMPERATURE_DELTA;name;value$
+// SET_RELAY_TEMPERATURE_DELTA;ALL;value$
+void SetRelayTemperatureDelta(const String& command);
+
 #endif // _PROCESSOR_H_

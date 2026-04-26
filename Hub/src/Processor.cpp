@@ -69,6 +69,20 @@ void ProcessCommand(const String& command) {
             // SET_MANUAL_STATE;name;value$
             // SET_MANUAL_STATE;ALL;value$
             SetManualState(oneCommand);
+        } else if (oneCommand.startsWith("SET_RELAY_THERMOMETER;")) {
+            // SET_RELAY_THERMOMETER;00:00:00:00:00:00;00:00:00:00:00:00$
+            // SET_RELAY_THERMOMETER;name;00:00:00:00:00:00$
+            SetRelayThermometer(oneCommand);
+        } else if (oneCommand.startsWith("SET_RELAY_TEMPERATURE;")) {
+            // SET_RELAY_TEMPERATURE;00:00:00:00:00:00;value$
+            // SET_RELAY_TEMPERATURE;name;value$
+            // SET_RELAY_TEMPERATURE;ALL;value$
+            SetRelayTemperature(oneCommand);
+        } else if (oneCommand.startsWith("SET_RELAY_TEMPERATURE_DELTAa;")) {
+            // SET_RELAY_TEMPERATURE_DELTA;00:00:00:00:00:00;value$
+            // SET_RELAY_TEMPERATURE_DELTA;name;value$
+            // SET_RELAY_TEMPERATURE_DELTA;ALL;value$
+            SetRelayTemperatureDelta(oneCommand);
         }
     }
 }
@@ -173,17 +187,17 @@ void SetManualMode(const String& command) {
         return;
     }
 
-    const String& stateString = parts[2];
-    if (stateString.length() == 0) {
+    const String& manualModeString = parts[2];
+    if (manualModeString.length() == 0) {
         return;
     }
 
-    const bool manualModeState = (stateString == "true" || stateString == "1" ? true : false);
+    const bool manualMode = (manualModeString == "true" || manualModeString == "1" ? true : false);
 
     if (parts[1] == "ALL") {
         std::set<Mac> thermostatRelays = ListThermostatRelays();
         for (const Mac& thermostatRelay : thermostatRelays) {
-            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, thermostatRelay, manualModeState);
+            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, thermostatRelay, manualMode);
         }
 
         return;
@@ -194,7 +208,7 @@ void SetManualMode(const String& command) {
         return;
     }
 
-    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, receiverMac.value(), manualModeState);
+    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, receiverMac.value(), manualMode);
 }
 
 // SET_MANUAL_STATE;00:00:00:00:00:00;value$
@@ -206,17 +220,17 @@ void SetManualState(const String& command) {
         return;
     }
 
-    const String& stateString = parts[2];
-    if (stateString.length() == 0) {
+    const String& manualStateString = parts[2];
+    if (manualStateString.length() == 0) {
         return;
     }
 
-    const bool manualModeState = (stateString == "true" || stateString == "1" ? true : false);
+    const bool manualState = (manualStateString == "true" || manualStateString == "1" ? true : false);
 
     if (parts[1] == "ALL") {
         std::set<Mac> thermostatRelays = ListThermostatRelays();
         for (const Mac& thermostatRelay : thermostatRelays) {
-            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, thermostatRelay, manualModeState);
+            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, thermostatRelay, manualState);
         }
 
         return;
@@ -227,5 +241,92 @@ void SetManualState(const String& command) {
         return;
     }
 
-    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, receiverMac.value(), manualModeState);
+    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, receiverMac.value(), manualState);
+}
+
+// SET_RELAY_THERMOMETER;00:00:00:00:00:00;00:00:00:00:00:00$
+// SET_RELAY_THERMOMETER;name;00:00:00:00:00:00$
+void SetRelayThermometer(const String& command) {
+    std::vector<String> parts = SplitString(command, ';');
+    if (parts.size() != 3) {
+        return;
+    }
+
+    std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
+    if (!receiverMac.has_value()) {
+        return;
+    }
+
+    std::optional<Mac> thermometerMac = GetReceiverMac(parts[2]);
+    if (!thermometerMac.has_value()) {
+        return;
+    }
+
+    SendMessage(MessageType::THERMOSTAT_RELAY_THERMOMETER, receiverMac.value(), thermometerMac.value());
+}
+
+// SET_RELAY_TEMPERATURE;00:00:00:00:00:00;value$
+// SET_RELAY_TEMPERATURE;name;value$
+// SET_RELAY_TEMPERATURE;ALL;value$
+void SetRelayTemperature(const String& command) {
+    std::vector<String> parts = SplitString(command, ';');
+    if (parts.size() != 3) {
+        return;
+    }
+
+    const String& relyTemperatureString = parts[2];
+    if (relyTemperatureString.length() == 0) {
+        return;
+    }
+
+    const float relayTemperature = relyTemperatureString.toFloat();
+
+    if (parts[1] == "ALL") {
+        std::set<Mac> thermostatRelays = ListThermostatRelays();
+        for (const Mac& thermostatRelay : thermostatRelays) {
+            SendMessage(MessageType::THERMOSTAT_RELAY_TEMPERATURE, thermostatRelay, relayTemperature);
+        }
+
+        return;
+    }
+
+    std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
+    if (!receiverMac.has_value()) {
+        return;
+    }
+
+    SendMessage(MessageType::THERMOSTAT_RELAY_TEMPERATURE, receiverMac.value(), relayTemperature);
+}
+
+// SET_RELAY_TEMPERATURE_DELTA;00:00:00:00:00:00;value$
+// SET_RELAY_TEMPERATURE_DELTA;name;value$
+// SET_RELAY_TEMPERATURE_DELTA;ALL;value$
+void SetRelayTemperatureDelta(const String& command) {
+    std::vector<String> parts = SplitString(command, ';');
+    if (parts.size() != 3) {
+        return;
+    }
+
+    const String& relyTemperatureDeltaString = parts[2];
+    if (relyTemperatureDeltaString.length() == 0) {
+        return;
+    }
+
+    const float relayTemperatureDelta = relyTemperatureDeltaString.toFloat();
+
+    if (parts[1] == "ALL") {
+        std::set<Mac> thermostatRelays = ListThermostatRelays();
+        for (const Mac& thermostatRelay : thermostatRelays) {
+            SendMessage(MessageType::THERMOSTAT_RELAY_TEMPERATURE_DELTA, thermostatRelay, relayTemperatureDelta);
+        }
+
+        return;
+    }
+
+    std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
+    if (!receiverMac.has_value()) {
+        return;
+    }
+
+    SendMessage(MessageType::THERMOSTAT_RELAY_TEMPERATURE_DELTA, receiverMac.value(), relayTemperatureDelta);
 }
