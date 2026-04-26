@@ -19,4 +19,14 @@ void SetBrightness(const String& command);
 // SET_STATE;ALL;value$
 void SetState(const String& command);
 
+// SET_MANUAL_MODE;00:00:00:00:00:00;value$
+// SET_MANUAL_MODE;name;value$
+// SET_MANUAL_MODE;ALL;value$
+void SetManualMode(const String& command);
+
+// SET_MANUAL_STATE;00:00:00:00:00:00;value$
+// SET_MANUAL_STATE;name;value$
+// SET_MANUAL_STATE;ALL;value$
+void SetManualState(const String& command);
+
 #endif // _PROCESSOR_H_

@@ -59,6 +59,16 @@ void ProcessCommand(const String& command) {
             // SET_STATE;name;value$
             // SET_STATE;ALL;value$
             SetState(oneCommand);
+        } else if (oneCommand.startsWith("SET_MANUAL_MODE;")) {
+            // SET_MANUAL_MODE;00:00:00:00:00:00;value$
+            // SET_MANUAL_MODE;name;value$
+            // SET_MANUAL_MODE;ALL;value$
+            SetManualMode(oneCommand);
+        } else if (oneCommand.startsWith("SET_MANUAL_STATE;")) {
+            // SET_MANUAL_STATE;00:00:00:00:00:00;value$
+            // SET_MANUAL_STATE;name;value$
+            // SET_MANUAL_STATE;ALL;value$
+            SetManualState(oneCommand);
         }
     }
 }
@@ -152,4 +162,70 @@ void SetState(const String& command) {
     }
 
     SendMessage(MessageType::RELAY_SET_STATE, receiverMac.value(), state);
+}
+
+// SET_MANUAL_MODE;00:00:00:00:00:00;value$
+// SET_MANUAL_MODE;name;value$
+// SET_MANUAL_MODE;ALL;value$
+void SetManualMode(const String& command) {
+    std::vector<String> parts = SplitString(command, ';');
+    if (parts.size() != 3) {
+        return;
+    }
+
+    const String& stateString = parts[2];
+    if (stateString.length() == 0) {
+        return;
+    }
+
+    const bool manualModeState = (stateString == "true" || stateString == "1" ? true : false);
+
+    if (parts[1] == "ALL") {
+        std::set<Mac> thermostatRelays = ListThermostatRelays();
+        for (const Mac& thermostatRelay : thermostatRelays) {
+            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, thermostatRelay, manualModeState);
+        }
+
+        return;
+    }
+
+    std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
+    if (!receiverMac.has_value()) {
+        return;
+    }
+
+    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_MODE, receiverMac.value(), manualModeState);
+}
+
+// SET_MANUAL_STATE;00:00:00:00:00:00;value$
+// SET_MANUAL_STATE;name;value$
+// SET_MANUAL_STATE;ALL;value$
+void SetManualState(const String& command) {
+    std::vector<String> parts = SplitString(command, ';');
+    if (parts.size() != 3) {
+        return;
+    }
+
+    const String& stateString = parts[2];
+    if (stateString.length() == 0) {
+        return;
+    }
+
+    const bool manualModeState = (stateString == "true" || stateString == "1" ? true : false);
+
+    if (parts[1] == "ALL") {
+        std::set<Mac> thermostatRelays = ListThermostatRelays();
+        for (const Mac& thermostatRelay : thermostatRelays) {
+            SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, thermostatRelay, manualModeState);
+        }
+
+        return;
+    }
+
+    std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
+    if (!receiverMac.has_value()) {
+        return;
+    }
+
+    SendMessage(MessageType::THERMOSTAT_RELAY_MANUAL_STATE, receiverMac.value(), manualModeState);
 }
