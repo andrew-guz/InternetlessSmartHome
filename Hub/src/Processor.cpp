@@ -3,6 +3,7 @@
 #include <WString.h>
 #include <esp_now.h>
 #include <optional>
+#include <set>
 #include <vector>
 
 #include "../include/Data.hpp"
@@ -51,10 +52,12 @@ void ProcessCommand(const String& command) {
         } else if (oneCommand.startsWith("SET_BRIGHTNESS;")) {
             // SET_BRIGHTNESS;00:00:00:00:00:00;value$
             // SET_BRIGHTNESS;name;value$
+            // SET_BRIGHTNESS;ALL;value$
             SetBrightness(oneCommand);
         } else if (oneCommand.startsWith("SET_STATE;")) {
             // SET_STATE;00:00:00:00:00:00;value$
             // SET_STATE;name;value$
+            // SET_STATE;ALL;value$
             SetState(oneCommand);
         }
     }
@@ -87,6 +90,7 @@ void Rename(const String& command) {
 
 // SET_BRIGHTNESS;00:00:00:00:00:00;value$
 // SET_BRIGHTNESS;name;value$
+// SET_BRIGHTNESS;ALL;value$
 void SetBrightness(const String& command) {
     std::vector<String> parts = SplitString(command, ';');
     if (parts.size() != 3) {
@@ -100,6 +104,15 @@ void SetBrightness(const String& command) {
 
     const int brightness = brightnessString.toInt();
 
+    if (parts[1] == "ALL") {
+        std::set<Mac> thermometers = ListThermometers();
+        for (const Mac& thermometer : thermometers) {
+            SendMessage(MessageType::THERMOMETER_BRIGHTNESS, thermometer, brightness);
+        }
+
+        return;
+    }
+
     std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
     if (!receiverMac.has_value()) {
         return;
@@ -110,6 +123,7 @@ void SetBrightness(const String& command) {
 
 // SET_STATE;00:00:00:00:00:00;value$
 // SET_STATE;name;value$
+// SET_STATE;ALL;value$
 void SetState(const String& command) {
     std::vector<String> parts = SplitString(command, ';');
     if (parts.size() != 3) {
@@ -123,10 +137,19 @@ void SetState(const String& command) {
 
     const bool state = (stateString == "true" || stateString == "1" ? true : false);
 
+    if (parts[1] == "ALL") {
+        std::set<Mac> relays = ListRelays();
+        for (const Mac& relay : relays) {
+            SendMessage(MessageType::RELAY_SET_STATE, relay, state);
+        }
+
+        return;
+    }
+
     std::optional<Mac> receiverMac = GetReceiverMac(parts[1]);
     if (!receiverMac.has_value()) {
         return;
     }
 
-    // SendMessage(MessageType::RELAY_SET_STATE, receiverMac.value(), state);
+    SendMessage(MessageType::RELAY_SET_STATE, receiverMac.value(), state);
 }

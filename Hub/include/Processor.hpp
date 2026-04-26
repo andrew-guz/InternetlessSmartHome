@@ -11,10 +11,12 @@ void Rename(const String& command);
 
 // SET_BRIGHTNESS;00:00:00:00:00:00;value$
 // SET_BRIGHTNESS;name;value$
+// SET_BRIGHTNESS;ALL;value$
 void SetBrightness(const String& command);
 
 // SET_STATE;00:00:00:00:00:00;value$
 // SET_STATE;name;value$
+// SET_STATE;ALL;value$
 void SetState(const String& command);
 
 #endif // _PROCESSOR_H_
