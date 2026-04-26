@@ -42,18 +42,21 @@ namespace {
 } // namespace
 
 void ProcessCommand(const String& command) {
-    if (command.startsWith("SET_NAME;")) {
-        // SET_NAME;00:00:00:00:00:00;newName$
-        // SET_NAME;old_name;newName$
-        Rename(command);
-    } else if (command.startsWith("SET_BRIGHTNESS;")) {
-        // SET_BRIGHTNESS;00:00:00:00:00:00;value$
-        // SET_BRIGHTNESS;name;value$
-        SetBrightness(command);
-    } else if (command.startsWith("SET_STATE;")) {
-        // SET_STATE;00:00:00:00:00:00;value$
-        // SET_STATE;name;value$
-        SetState(command);
+    std::vector<String> commands = SplitString(command, '$');
+    for (const String& oneCommand : commands) {
+        if (oneCommand.startsWith("SET_NAME;")) {
+            // SET_NAME;00:00:00:00:00:00;newName$
+            // SET_NAME;old_name;newName$
+            Rename(oneCommand);
+        } else if (oneCommand.startsWith("SET_BRIGHTNESS;")) {
+            // SET_BRIGHTNESS;00:00:00:00:00:00;value$
+            // SET_BRIGHTNESS;name;value$
+            SetBrightness(oneCommand);
+        } else if (oneCommand.startsWith("SET_STATE;")) {
+            // SET_STATE;00:00:00:00:00:00;value$
+            // SET_STATE;name;value$
+            SetState(oneCommand);
+        }
     }
 }
 
