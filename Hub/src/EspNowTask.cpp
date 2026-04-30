@@ -8,17 +8,21 @@
 #include "../include/Data.hpp"
 #include "../include/Messages.hpp"
 
-void OnDataSent(const esp_now_send_info_t* tx_info, esp_now_send_status_t status) {}
+namespace {
 
-void OnDataRecv(const esp_now_recv_info_t* esp_now_info, const uint8_t* data, int data_len) {
-    if (data_len != sizeof(Message))
-        return;
+    void OnDataSent(const esp_now_send_info_t* tx_info, esp_now_send_status_t status) {}
 
-    Message message;
-    memcpy(&message, data, sizeof(message));
+    void OnDataRecv(const esp_now_recv_info_t* esp_now_info, const uint8_t* data, int data_len) {
+        if (data_len != sizeof(Message))
+            return;
 
-    xQueueSendFromISR(espNowMessagesQueue, &message, NULL);
-}
+        Message message;
+        memcpy(&message, data, sizeof(message));
+
+        xQueueSendFromISR(espNowMessagesQueue, &message, NULL);
+    }
+
+} // namespace
 
 void EspNowTaskInit() {
     WiFi.mode(WIFI_STA);

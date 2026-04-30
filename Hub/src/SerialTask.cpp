@@ -1,8 +1,15 @@
 #include "../include/SerialTask.hpp"
 
 #include <Arduino.h>
+#include <WString.h>
 
 #include "../include/Processor.hpp"
+
+namespace {
+
+    void SendSerialReply(const String& reply) { Serial.println(reply); }
+
+} // namespace
 
 void SerialTask(void* pvParameters) {
     String receivedCommand;
@@ -12,7 +19,7 @@ void SerialTask(void* pvParameters) {
             char incomingChar = Serial.read();
 
             if (incomingChar == '$') {
-                ProcessCommand(receivedCommand);
+                ProcessCommand(receivedCommand, SendSerialReply);
                 receivedCommand = "";
             } else {
                 receivedCommand += incomingChar;

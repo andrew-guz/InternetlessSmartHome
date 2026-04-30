@@ -2,45 +2,10 @@
 #define _PROCESSOR_H_
 
 #include <WString.h>
+#include <functional>
 
-void ProcessCommand(const String& command);
+typedef std::function<void(const String&)> SendReply;
 
-// SET_NAME;00:00:00:00:00:00;newName$
-// SET_NAME;old_name;newName$
-void Rename(const String& command);
-
-// SET_BRIGHTNESS;00:00:00:00:00:00;value$
-// SET_BRIGHTNESS;name;value$
-// SET_BRIGHTNESS;ALL;value$
-void SetBrightness(const String& command);
-
-// SET_STATE;00:00:00:00:00:00;value$
-// SET_STATE;name;value$
-// SET_STATE;ALL;value$
-void SetState(const String& command);
-
-// SET_MANUAL_MODE;00:00:00:00:00:00;value$
-// SET_MANUAL_MODE;name;value$
-// SET_MANUAL_MODE;ALL;value$
-void SetManualMode(const String& command);
-
-// SET_MANUAL_STATE;00:00:00:00:00:00;value$
-// SET_MANUAL_STATE;name;value$
-// SET_MANUAL_STATE;ALL;value$
-void SetManualState(const String& command);
-
-// SET_RELAY_THERMOMETER;00:00:00:00:00:00;00:00:00:00:00:00$
-// SET_RELAY_THERMOMETER;name;00:00:00:00:00:00$
-void SetRelayThermometer(const String& command);
-
-// SET_RELAY_TEMPERATURE;00:00:00:00:00:00;value$
-// SET_RELAY_TEMPERATURE;name;value$
-// SET_RELAY_TEMPERATURE;ALL;value$
-void SetRelayTemperature(const String& command);
-
-// SET_RELAY_TEMPERATURE_DELTA;00:00:00:00:00:00;value$
-// SET_RELAY_TEMPERATURE_DELTA;name;value$
-// SET_RELAY_TEMPERATURE_DELTA;ALL;value$
-void SetRelayTemperatureDelta(const String& command);
+void ProcessCommand(const String& command, SendReply sendFunction);
 
 #endif // _PROCESSOR_H_
