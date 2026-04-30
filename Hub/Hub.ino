@@ -6,6 +6,7 @@
 #include "./include/EspNowTask.hpp"
 #include "./include/Memory.hpp"
 #include "./include/MonitorTask.hpp"
+#include "./include/SerialTask.hpp"
 #include "./include/SmsTask.hpp"
 
 Memory memory;
@@ -13,6 +14,7 @@ Memory memory;
 TaskHandle_t monitorTaskHandle = nullptr;
 TaskHandle_t espNowTaskHandle = nullptr;
 TaskHandle_t smsTaskHandle = nullptr;
+TaskHandle_t serialTaskHandle = nullptr;
 
 #define ESP_NOW_MESSAGE_QUEUE_SIZE 100
 
@@ -40,6 +42,7 @@ void setup() {
     xTaskCreate(MonitorTask, "Monitor task", 16384, NULL, 1, &monitorTaskHandle);
     xTaskCreate(EspNowTask, "ESP-NOW task", 16384, NULL, 1, &espNowTaskHandle);
     xTaskCreate(SmsTask, "SMS task", 16384, NULL, 1, &smsTaskHandle);
+    xTaskCreate(SerialTask, "Serial task", 16384, NULL, 1, &serialTaskHandle);
 }
 
 void loop() { vTaskDelete(NULL); }
