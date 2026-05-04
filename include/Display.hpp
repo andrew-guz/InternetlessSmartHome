@@ -1,6 +1,37 @@
 #ifndef _DISPLAY_H_
 #define _DISPLAY_H_
 
+#ifdef TM1637_DISPLAY
+#include <TM1637TinyDisplay.h>
+
+#define DISPLAY_MAX_BRIGHTNESS BRIGHT_7
+
+class TM1637Display {
+public:
+    TM1637Display(int clk_pin, int dio_pin) :
+        _display(clk_pin, dio_pin) {}
+
+    void Setup() {}
+
+    void SetBrightness(int value) {
+        if (value < BRIGHT_0)
+            value = BRIGHT_0;
+        if (value > BRIGHT_7)
+            value = BRIGHT_7;
+        if (value != BRIGHT_0)
+            _display.setBrightness(value, true);
+        else
+            _display.setBrightness(value, false);
+    }
+
+    void ShowString(const String& str) { _display.showString(str.c_str()); }
+
+private:
+    TM1637TinyDisplay _display;
+};
+#endif // TM1637_DISPLAY
+
+#ifdef OLED_DISPLAY
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <SPI.h>
@@ -81,5 +112,6 @@ private:
     Adafruit_SSD1306 _display;
     int _brightness = 2;
 };
+#endif // OLED_DISPLAY
 
 #endif // _DISPLAY_H_

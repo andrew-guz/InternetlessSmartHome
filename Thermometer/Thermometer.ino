@@ -2,12 +2,22 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
+#define OLED_DISPLAY
+// #define TM1637_DISPLAY
+
 #include "Display.hpp"
 #include "Memory.hpp"
 #include "Messages.hpp"
 #include "Temperature.hpp"
 
+#ifdef OLED_DISPLAY
 OLEDDisplay display;
+#endif // OLED_DISPLAY
+
+#ifdef TM1637_DISPLAY
+TM1637Display display(D3, D4);
+#endif // TM1637_DISPLAY
+
 I2CTemperatureSensor thermometer;
 Memory memory;
 
@@ -65,7 +75,9 @@ void loop() {
         lastUpdate = millis();
 
         float temperature = thermometer.GetTemperature();
+#ifdef OLED_DISPLAY
         display.SetFont(OLEDDisplay::OLEDDisplay::Font::Font_18pt7b);
+#endif // OLED_DISPLAY
         display.ShowString(String(temperature, 1) + String(" C"));
 
         Message message{
