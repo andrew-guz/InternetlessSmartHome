@@ -24,6 +24,7 @@ void setup() {
     Serial.begin(115200);
 
     esp_read_mac(myMac.data(), ESP_MAC_WIFI_STA);
+    Serial.println(MacToString(myMac));
 
     memory.Setup();
 

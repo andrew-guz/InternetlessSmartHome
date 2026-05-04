@@ -39,6 +39,7 @@ void setup() {
     Serial.begin(115200);
 
     wifi_get_macaddr(STATION_IF, myMac.data());
+    Serial.println(MacToString(myMac));
 
     display.Setup();
     thermometer.Setup();
