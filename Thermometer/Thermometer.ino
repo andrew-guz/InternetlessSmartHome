@@ -2,23 +2,33 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define OLED_DISPLAY
 // #define TM1637_DISPLAY
+#define OLED_DISPLAY
+
+// #define ONE_WIRE_TEMPERATURE_SENSOR
+#define I2C_TEMPERATURE_SENSOR
 
 #include "Display.hpp"
 #include "Memory.hpp"
 #include "Messages.hpp"
 #include "Temperature.hpp"
 
-#ifdef OLED_DISPLAY
-OLEDDisplay display;
-#endif // OLED_DISPLAY
-
 #ifdef TM1637_DISPLAY
 TM1637Display display(D3, D4);
 #endif // TM1637_DISPLAY
 
+#ifdef OLED_DISPLAY
+OLEDDisplay display;
+#endif // OLED_DISPLAY
+
+#ifdef ONE_WIRE_TEMPERATURE_SENSOR
+OneWireTemperatureSensor thermometer(D3);
+#endif // ONE_WIRE_TEMPERATURE_SENSOR
+
+#ifdef I2C_TEMPERATURE_SENSOR
 I2CTemperatureSensor thermometer;
+#endif // I2C_TEMPERATURE_SENSOR
+
 Memory memory;
 
 unsigned long lastUpdate = 0;
